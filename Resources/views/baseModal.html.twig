@@ -1,0 +1,21 @@
+<div id="{% block modalId %}base-modal{% endblock %}" class="modal {% block modalEffects %}fade{% endblock %}" role="dialog" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+        {% block modalContent %}
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">
+                <span aria-hidden="true">&times;</span>
+              </button>
+              {% block modalHeader %}{% endblock %}
+            </div>
+            <div class="modal-body">
+              {% block modalBody %}{% endblock %}
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ 'modal.button.close'|trans }}</button>
+              {% block modalFooter %}{% endblock %}
+            </div>
+        {% endblock %}
+    </div>
+  </div>
+</div>

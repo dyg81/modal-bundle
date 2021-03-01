@@ -1,0 +1,13 @@
+/**
+ * CSS file from Drupal 8 stable theme, used under GPL.
+ */
+
+.ajax-progress {
+  display: inline-block;
+  padding: 1px 5px 2px 5px;
+}
+.ajax-progress-throbber .throbber {
+  background: transparent url('../images/throbber-active.gif') no-repeat 0px center;
+  display: inline;
+  padding: 1px 8px 2px;
+}

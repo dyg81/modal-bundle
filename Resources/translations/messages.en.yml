@@ -1,0 +1,8 @@
+modal:
+    button:
+        close: Close
+        confirm: Confirm
+    message:
+        confirm:
+            title: Confirm your action
+            body: Are you sure you want to do this action?
