@@ -1,6 +1,6 @@
 <?php
 
-namespace Rares\ModalBundle\Response;
+namespace Dyg81\ModalBundle\Response;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -13,6 +13,8 @@ class DynamicRedirectResponse extends JsonResponse
      *
      * @param mixed $updateDOMResponse
      *   Any type of response from DynamicPageBundle.
+     *
+     * @author Donald Yañez González <donald.yanez@gmail.com>
      */
     public function __construct($updateDOMResponse)
     {

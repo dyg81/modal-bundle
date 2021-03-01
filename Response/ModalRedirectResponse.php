@@ -1,6 +1,6 @@
 <?php
 
-namespace Rares\ModalBundle\Response;
+namespace Dyg81\ModalBundle\Response;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -12,6 +12,8 @@ class ModalRedirectResponse extends JsonResponse
      *
      * @param string $url
      *   The url to redirect to.
+     *
+     * @author Donald Yañez González <donald.yanez@gmail.com>
      */
     public function __construct($url)
     {

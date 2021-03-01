@@ -1,6 +1,6 @@
 <?php
 
-namespace Rares\ModalBundle\Response;
+namespace Dyg81\ModalBundle\Response;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -13,6 +13,8 @@ class ModalOpenResponse extends JsonResponse
      *   The modal that will be opened.
      * @param string $modalId
      *   The id of the modal.
+     *
+     * @author Donald Yañez González <donald.yanez@gmail.com>
      */
     public function __construct($modal, $modalId = null)
     {
