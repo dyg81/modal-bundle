@@ -10,11 +10,17 @@
             "name": "Donald Yañez González",
             "email": "donald.yanez@gmail.com",
             "role": "Developer"
+        },
+        {
+            "name": "Rares Serban",
+            "email": "raresserban96@gmail.com",
+            "role": "Developer"
         }
     ],
     "require": {
         "php": ">=5.5.9",
-        "symfony/framework-bundle": "3.4.* || 4.4.* || >=5.0"
+        "symfony/framework-bundle": "3.4.* || 4.4.* || >=5.0",
+        "sensio/framework-extra-bundle": "^5.0 || ^5.1",
     },
     "autoload": {
         "psr-4": {"Dyg81\\ModalBundle\\": ""}
