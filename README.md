@@ -16,14 +16,15 @@ Then you need to require this bundle:
   composer require "dyg81/modal-bundle"
 ```
 
-Then you need to add the following to your routing.yml file in the app/config folder for the controller routes to
-work properly:
+Then you need to add the following for the controller routes to work properly:
 
 ```yml
 dyg81modalbundle:
     resource: "@Dyg81ModalBundle/Controller/"
     type:     annotation
 ```
+
+    Hit: In a sf3.4 project created with composer the file is routing.yml in the app/config folder. Is you create a sf3.4 project with the symfony binary installer, or sf4.4/5.x by composer or symfony binary you should add the above lines to annotations.yaml in the config/routes folder.
 
 Then enable the bundle in your AppKernel file:
 
