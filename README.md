@@ -1,5 +1,5 @@
 # Overview
-This symfony bundle is a fork of [Rares/ModalBundle](https://packagist.org/packages/rares/modal-bundle) wich is unmanteined.
+This symfony bundle is a fork of [Rares/ModalBundle](https://packagist.org/packages/rares/modal-bundle) which is no longer maintained.
 
 This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the process of displaying content in a modal. It provides several functionalities, from displaying simple messages and confirmation modals to displaying hole forms inside a modal.
 
@@ -16,7 +16,7 @@ Then you need to require this bundle:
   composer require "dyg81/modal-bundle"
 ```
 
-Then you need to add the following for the controller routes to work properly:
+After that, add the following code to the file routing.yml or annotations.yaml, depending of the symfony version you are working on, for the controller routes to work properly:
 
 ```yml
 dyg81modalbundle:
@@ -24,9 +24,9 @@ dyg81modalbundle:
     type:     annotation
 ```
 
-    Hit: In a sf3.4 project created with composer the file is routing.yml in the app/config folder. Is you create a sf3.4 project with the symfony binary installer, or sf4.4/5.x by composer or symfony binary you should add the above lines to annotations.yaml in the config/routes folder.
+**Hint:** The processes below are automatic if you use symfony flex.
 
-Then enable the bundle in your AppKernel file:
+Then, enable the bundle in your AppKernel file:
 
 ```php
 $bundles = [
@@ -41,15 +41,13 @@ You will then have to install the assets using the command:
 bin/console assets:install --symlink
 ```
 
-Hint: The above processes are automatic if you use symfony flex.
-
-Then you need to include one javascript file in your templates where you want to use modals, I recommend including it in the base template:
+Finally, you need to include one javascript file in your templates where you want to use modals, I recommend including it in the base template:
 
 ```twig
 <script src="{{ asset('bundles/dyg81modal/js/scripts.js') }}"></script>
 ```
 
-The old bundle can be combine with DynamicPageBundle. This new version is not test with that bundle but if you want to try, make it at your own risk. If you want to use the DynamicPageBundle, make sure to include the javascript file from this bundle first in your template.
+The old bundle can be combine with DynamicPageBundle. This new version is not tested with that bundle but if you want to try, make it at your own risk. If you want to use the DynamicPageBundle, make sure to include the javascript file from that bundle first in your template.
 
 If you want to have a loading icon when ajax requests are made, you should also include the css file included in this module:
 
