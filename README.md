@@ -5,7 +5,7 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
 
 # Version History
 
-    TODO
+    v1.0.0 - First stable release. Support all versions mentioned above.
 
 # Installation
 To install this bundle, first you need to have jQuery and Bootstrap installed.
@@ -35,7 +35,7 @@ $bundles = [
 ];
 ```
 
-You will then have to install the assets using the command:
+And install the assets using the command:
 
 ```
 bin/console assets:install --symlink
