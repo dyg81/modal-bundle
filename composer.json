@@ -19,7 +19,7 @@
     ],
     "require": {
         "php": ">=5.5.9",
-        "symfony/framework-bundle": "3.4.*",
+        "symfony/framework-bundle": "^3.4",
         "sensio/framework-extra-bundle": "^5.0",
         "symfony/routing": "^3.4",
         "symfony/translation": "^3.4",
