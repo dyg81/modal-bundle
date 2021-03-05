@@ -5,7 +5,7 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
 
 # Version History
 
-    v1.0.0 - First stable release. Support all versions mentioned above.
+    v1.0.0 - First release. Support only Symfony 3.4.* Standard Edition without symfony flex.
 
 # Installation
 To install this bundle, first you need to have jQuery and Bootstrap installed.
