@@ -15,6 +15,8 @@ class DynamicRedirectResponse extends JsonResponse
      *   Any type of response from DynamicPageBundle.
      *
      * @author Donald Yañez González <donald.yanez@gmail.com>
+     *
+     * @author Rares Serban <raresserban96@gmail.com>
      */
     public function __construct($updateDOMResponse)
     {

@@ -14,6 +14,8 @@ class ModalRedirectResponse extends JsonResponse
      *   The url to redirect to.
      *
      * @author Donald Yañez González <donald.yanez@gmail.com>
+     *
+     * @author Rares Serban <raresserban96@gmail.com>
      */
     public function __construct($url)
     {

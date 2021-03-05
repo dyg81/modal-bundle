@@ -15,6 +15,8 @@ class ModalController extends AbstractController
      * @Route("/modal/open/{message}", name="dyg81_modal_open_message")
      *
      * @author Donald Yañez González <donald.yanez@gmail.com>
+     *
+     * @author Rares Serban <raresserban96@gmail.com>
      */
     public function openMessageModalAction($message)
     {
@@ -32,6 +34,8 @@ class ModalController extends AbstractController
      * @Route("/modal/confirm", name="dyg81_modal_open_confirm")
      *
      * @author Donald Yañez González <donald.yanez@gmail.com>
+     *
+     * @author Rares Serban <raresserban96@gmail.com>
      */
     public function openConfirmModalAction()
     {

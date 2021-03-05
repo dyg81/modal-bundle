@@ -15,6 +15,8 @@ class ModalOpenResponse extends JsonResponse
      *   The id of the modal.
      *
      * @author Donald Yañez González <donald.yanez@gmail.com>
+     *
+     * @author Rares Serban <raresserban96@gmail.com>
      */
     public function __construct($modal, $modalId = null)
     {
