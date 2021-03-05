@@ -7,7 +7,7 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
 
     v1.0.0 - First release. Support only Symfony 3.4.* Standard Edition without symfony flex.
     v1.0.1 - Fix a minor issue.
-    v1.0.2 - Improve symfony/framework-bundle syntaxis.
+    v1.0.2 - Improve symfony/framework-bundle syntaxis in the composer.json file.
 
 # Installation
 To install this bundle, first you need to have jQuery and Bootstrap installed.
