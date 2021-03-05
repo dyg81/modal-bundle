@@ -8,6 +8,7 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
     v1.0.0 - First release. Support only Symfony 3.4.* Standard Edition without symfony flex.
     v1.0.1 - Fix a minor issue.
     v1.0.2 - Improve symfony/framework-bundle syntaxis in the composer.json file.
+    v1.0.3 - Drop DynamicPageBundle support.
 
 # Installation
 To install this bundle, first you need to have jQuery and Bootstrap installed.
@@ -48,8 +49,6 @@ Finally, you need to include one javascript file in your templates where you wan
 ```twig
 <script src="{{ asset('bundles/dyg81modal/js/scripts.js') }}"></script>
 ```
-
-The old bundle can be combine with DynamicPageBundle. This new version is not tested with that bundle but if you want to try, make it at your own risk. If you want to use the DynamicPageBundle, make sure to include the javascript file from that bundle first in your template.
 
 If you want to have a loading icon when ajax requests are made, you should also include the css file included in this module:
 
@@ -132,7 +131,7 @@ Example of a link that opens a form:
 <a class="modal-open" href="{{ path('contact_edit_modal', { 'id': contactMessage.id }) }}">edit modal</a>
 ```
 
-In the controller action, the form action url will need to be explicitly set on the form, preferably to the same controller action. Also, when the form is successfully submitted, the redirection to a new page should be done by returning a new [ModalRedirectResponse](Response/ModalRedirectResponse.php) object, which takes an url as a parameter. You can also return a [DynamicRedirectResponse](Response/DynamicRedirectResponse.php) if you use the DynamicPageBundle and want to response to be handled by it.
+In the controller action, the form action url will need to be explicitly set on the form, preferably to the same controller action. Also, when the form is successfully submitted, the redirection to a new page should be done by returning a new [ModalRedirectResponse](Response/ModalRedirectResponse.php) object, which takes an url as a parameter.
 
 When submitting the form, it is submitted by an ajax call and then if no redirection occurs, the modal is closed and opened with the new form which should contain any form errors. For this reason, there can be no modal animations on the form modal. You can find a base template for a modal form with no animations [here](Resources/views/baseFormModal.html.twig).
 
@@ -200,6 +199,7 @@ This is a special modal type which is used for confirming user input. The ModalB
 The template file for this modal can be found [here](Resources/views/baseConfirmModal.html.twig). It displays a title and a body message, which are translatable and can be overwritten, and also has two buttons, one for closing the modal and another confirm button. The confirm button needs to have the class **modal-btn-confirm** in order for the modal to work properly. Keep this in mind if you want to make your own custom layout for this type of modal.
 
 This modal is opened in a different way that the content modal. The class that needs to be added to the element is **modal-open-confirm** and the element needs to also have the attribute **data-modal-href** set to the controller action which returns the confirmation modal template. The **data-modal-id** attribute is also supported.
+
 The class can be put also on form elements, like buttons and inputs and after confirmation the form will be submitted, or on anchor elements, where the browser will be redirected to the href link after confirmation. This is an example on how to use this modal type on a link:
 
 ```twig
@@ -225,7 +225,7 @@ return $this->createFormBuilder()
 ### Open modal after successful form submission
 With this bundle it is also possible to open a modal after a form has been successfully submitted without reloading the page. This is useful if you want to have a multi step form form example.
 
-What you have to do is put the class **modal-open-from-form** on your form. The form will then be submitted using ajax and if errors were found the page is reload, if not a modal will open. To open a modal, when the form is successfully submitted, you should return a response of type [ModalOpenResponse](Response/ModalOpenResponse.php).This takes two arguments, the first is the url from which the modal will be loaded, this should return a simple modal or a form modal. The second argument is optional and is the modal id if you want to have a modal with a custom id. You can also return a [DynamicRedirectResponse](Response/DynamicRedirectResponse.php) if you use the DynamicPageBundle and want to open a modal but also update the page dynamically.
+What you have to do is put the class **modal-open-from-form** on your form. The form will then be submitted using ajax and if errors were found the page is reload, if not a modal will open. To open a modal, when the form is successfully submitted, you should return a response of type [ModalOpenResponse](Response/ModalOpenResponse.php).This takes two arguments, the first is the url from which the modal will be loaded, this should return a simple modal or a form modal. The second argument is optional and is the modal id if you want to have a modal with a custom id.
 
 Example response:
 
