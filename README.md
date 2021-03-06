@@ -5,11 +5,11 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
 
 # Version History
 
-    v1.0.0 - First release. Support only Symfony 3.4.* Standard Edition without symfony flex.
+    v1.0.0 - First release. Support only Symfony 3.4.* based on the [Symfony Standard Edition](https://github.com/symfony/symfony-standard).
     v1.0.1 - Fix a minor issue.
     v1.0.2 - Improve symfony/framework-bundle syntaxis in the composer.json file.
     v1.0.3 - Drop DynamicPageBundle support.
-    v1.1.0 - Change the require section in composer.json to support only Symfony 3.4.* Standard Edition with flex.
+    v1.1.0 - Change the require section in composer.json to support only Symfony 3.4.* installed via [Symfony Website Skeleton](https://github.com/symfony/website-skeleton).
 
 # Installation
 To install this bundle, first you need to have jQuery and Bootstrap installed.
