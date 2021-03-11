@@ -1,0 +1,13 @@
+services:
+#    dyg81_modal.example:
+#        class: Dyg81\ModalBundle\Example
+#        arguments: ["@service_id", "plain_value", "%parameter%"]
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  Dyg81\ModalBundle\Controller\ModalController:
+    calls:
+      - method: setContainer
+        arguments: ['@service_container']
