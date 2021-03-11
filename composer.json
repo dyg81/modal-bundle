@@ -29,10 +29,5 @@
     },
     "autoload": {
         "psr-4": {"Dyg81\\ModalBundle\\": ""}
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.x-dev"
-        }
     }
 }
