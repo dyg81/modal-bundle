@@ -21,7 +21,8 @@ class ModalController extends AbstractController
     public function openMessageModalAction($message)
     {
         return $this->render('@Dyg81Modal/messageModal.html.twig', [
-            'message' => $this->get('translator')->trans($message),
+            //'message' => $this->get('translator')->trans($message),
+            'message' => $message,
         ]);
     }
 
