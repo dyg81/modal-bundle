@@ -18,6 +18,7 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
     v1.4.1 - Delete unnecesary branch-alias section from composer.json.
     v2.0.0 - Restructured the bundle to meet Symfony new standars. Add sf5.3 support, and sf4.4 again as well, drop sf5.2 support.
     v2.0.1 - Fix wrong explanation in the README.md file
+    v2.0.2 - Improve bundle requeriments
 
 # Installation
 To install this bundle, first you need to have jQuery and Bootstrap installed.
