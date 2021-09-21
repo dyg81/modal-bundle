@@ -25,6 +25,7 @@ Then you need to require this bundle:
 ```
   composer require "dyg81/modal-bundle"
 ```
+**Important!** If you are facing problems installing the bundle in Symfony 3.4, please explicit the necesary version: **composer require "dyg81/modal-bundle:1.2.2"**
 
 After that, add the following code to the file routing.yml or annotations.yaml, depending of the symfony version you are working on, for the controller routes to work properly:
 
@@ -34,18 +35,18 @@ dyg81modalbundle:
     type:     annotation
 ```
 
-**Hint:** The processes below are automatic if you use symfony flex.
-
-Then, enable the bundle in your AppKernel file:
+In Symfony 3.4 Standard Edition, enable the bundle in your AppKernel file:
 
 ```php
 $bundles = [
 	...,
-	new Dyg81\ModalBundle\RaresModalBundle(),
+	new Dyg81\ModalBundle\Dyg81ModalBundle(),
 ];
 ```
 
-And install the assets using the command:
+**Hint:** The processes below are automatic if you use symfony flex.
+
+And install the assets using the following command:
 
 ```
 bin/console assets:install --symlink
@@ -57,18 +58,18 @@ Finally, you need to include one javascript file in your templates where you wan
 <script src="{{ asset('bundles/dyg81modal/js/scripts.js') }}"></script>
 ```
 
-If you want to have a loading icon when ajax requests are made, you should also include the css file included in this module:
+If you want to have a loading icon when ajax requests are made, you should also add the css file included in this module:
 
 ```twig
-<link href="{{ asset('bundles/dyg81modal/css/ajax-progress.css') }}" rel="stylesheet">
+<link rel="stylesheet" href="{{ asset('bundles/dyg81modal/css/ajax-progress.css') }}">
 ```
 
 # Features
-The ModalBundle provides two basic modal types: a content modal, which can also include forms and a confirmation modal. You can also use this bundle to open modals after a successful form submission. We will take a look at all the different modal types and how to use them.
+The ModalBundle provides two basic modal types: a content modal, which can also include forms, and a confirmation modal. You can also use this bundle to open modals after a successful form submission. We will take a look at all the different modal types and how to use them.
 
 Keep in mind that this bundle only supports one modal open at a time, because this is the default Bootstrap behaviour.
 
-Also, when doing ajax request, after the element that was clicked, a div element is added with the classes **ajax-progress** and **ajax-progress-throbber** and a dynamic class if the clicked element has an id, **ajax-progress-ELEMENTID**. Inside this div there is also another div with the class **throbber** that renders a small gif file. If you do not want to use the default loading gif, you should not include the css file in the project and customize the css however you want.
+Also, when doing ajax request, after the element that was clicked a div element is added with the classes **ajax-progress** and **ajax-progress-throbber**, and a dynamic class if the clicked element has an id, **ajax-progress-ELEMENTID**. Inside this div there is also another div with the class **throbber** that renders a small gif file. If you do not want to use the default loading gif, you should not include the css file in the project or customize the css however you want.
 
 ### Content Modal
 The content modal is the basic modal type which can be used to display pretty much any content inside a modal.
@@ -97,7 +98,7 @@ The messageModal.html.twig template is just a simple template that extends the b
 To open a simple message modal from a twig file we have to put the class **modal-open** on a clickable element which should have an href attribute with the path to the controller action, for example like this:
 
 ```twig
-<button href="{{ path('dyg81_modal_open_message', {'message': 'info.message'}) }}" class="modal-open" type="button" class="btn btn-secondary">Open Test Modal</button>
+<button type="button" href="{{ path('dyg81_modal_open_message', {'message': 'info.message'}) }}" class="btn btn-secondary modal-open">Open Message Modal</button>
 ```
 
 If we want to display our own custom content in a modal, we can also do that pretty easily. We need to create a controller action which should return a template which extends the baseModal.html.twig template, or we can also create our own custom modal template. An example of a controller action is found below:
@@ -113,7 +114,7 @@ If we want to display our own custom content in a modal, we can also do that pre
     {
         $deleteForm = $this->createDeleteForm($contactMessage);
 
-        return $this->render('AppBundle:contact:showModal.html.twig', array(
+        return $this->render('contact/showModal.html.twig', array(
             'contactMessage' => $contactMessage,
             'delete_form' => $deleteForm->createView(),
         ));
@@ -123,7 +124,7 @@ If we want to display our own custom content in a modal, we can also do that pre
 In a twig file we can then make an element with the same class, **modal-open** set on it and with the href attribute pointing to our controller action.
 
 ```twig
-<a class="modal-open" data-modal-id="contact-modal" href="{{ path('contact_show_modal', { 'id': contactMessage.id }) }}">Show Modal</a>
+<a href="{{ path('contact_show_modal', { 'id': contactMessage.id }) }}" class="modal-open" data-modal-id="contact-modal">Show Contact Modal</a>
 ```
 
 As you can see, in the example above we also specify the attribute **data-modal-id**. This attribute will be used to open the modal with the specific id. This is useful if we have custom modal templates, or if we set a custom id in our template like we did here. The default id for the baseModal.html.twig template is **base-modal** and is recommended that all modals use that id.
@@ -135,12 +136,12 @@ Opening a form inside a modal is pretty similar to opening a normal modal, you j
 Example of a link that opens a form:
 
 ```twig
-<a class="modal-open" href="{{ path('contact_edit_modal', { 'id': contactMessage.id }) }}">edit modal</a>
+<a href="{{ path('contact_edit_modal', { 'id': contactMessage.id }) }}" class="modal-open">Edit Modal</a>
 ```
 
 In the controller action, the form action url will need to be explicitly set on the form, preferably to the same controller action. Also, when the form is successfully submitted, the redirection to a new page should be done by returning a new [ModalRedirectResponse](Response/ModalRedirectResponse.php) object, which takes an url as a parameter.
 
-When submitting the form, it is submitted by an ajax call and then if no redirection occurs, the modal is closed and opened with the new form which should contain any form errors. For this reason, there can be no modal animations on the form modal. You can find a base template for a modal form with no animations [here](Resources/views/baseFormModal.html.twig).
+When submitting the form, it is submitted by an ajax call and then, if no redirection occurs, the modal is closed and opened with the new form which should contain any form errors. For this reason, there can be no modal animations on the form modal. You can find a base template for a modal form with no animations [here](Resources/views/baseFormModal.html.twig).
 
 Keep in mind that if you have multiple forms inside the modal, only the first one will be submitted using ajax. Below is an example of a controller action that returns a modal form template which extends the template mentioned above:
 
@@ -177,7 +178,7 @@ Keep in mind that if you have multiple forms inside the modal, only the first on
             return new ModalRedirectResponse($this->generateUrl('contact_index'));
         }
 
-        return $this->render('AppBundle:contact:editModal.html.twig', array(
+        return $this->render('contact/editModal.html.twig', array(
             'contactMessage' => $contactMessage,
             'edit_form' => $editForm->createView(),
             'delete_form' => $deleteForm->createView(),
@@ -230,7 +231,7 @@ return $this->createFormBuilder()
 ```
 
 ### Open modal after successful form submission
-With this bundle it is also possible to open a modal after a form has been successfully submitted without reloading the page. This is useful if you want to have a multi step form form example.
+Finally, with this bundle it is also possible to open a modal after a form has been successfully submitted without reloading the page. This is useful if you want to have a multi step form form example.
 
 What you have to do is put the class **modal-open-from-form** on your form. The form will then be submitted using ajax and if errors were found the page is reload, if not a modal will open. To open a modal, when the form is successfully submitted, you should return a response of type [ModalOpenResponse](Response/ModalOpenResponse.php).This takes two arguments, the first is the url from which the modal will be loaded, this should return a simple modal or a form modal. The second argument is optional and is the modal id if you want to have a modal with a custom id.
 
