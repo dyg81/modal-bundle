@@ -17,6 +17,7 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
     v1.4.0 - Add the dependency injection service to support sf5.2. Any other version is unsupported from now on.
     v1.4.1 - Delete unnecesary branch-alias section from composer.json.
     v2.0.0 - Restructured the bundle to meet Symfony new standars. Add sf5.3 support, and sf4.4 again as well, drop sf5.2 support.
+    v2.0.1 - Fix wrong explanation in the README.md file
 
 # Installation
 To install this bundle, first you need to have jQuery and Bootstrap installed.
@@ -45,7 +46,7 @@ $bundles = [
 ];
 ```
 
-**Hint:** The processes below are automatic if you use symfony flex.
+**Hint:** The processes above are automatic if you use symfony flex.
 
 And install the assets using the following command:
 
