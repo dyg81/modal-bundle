@@ -35,7 +35,7 @@ After that, add the following code to the file routing.yml or annotations.yaml, 
 
 ```yml
 dyg81modalbundle:
-    resource: "@Dyg81ModalBundle/Controller/"
+    resource: "@Dyg81ModalBundle/src/Controller/"
     type:     annotation
 ```
 
