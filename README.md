@@ -21,9 +21,10 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
     v2.0.2 - Improve bundle requeriments
     v2.0.3 - Add backdrop block to baseModal.html.twig
     v2.0.4 - Fix wrong code in the installation section
+    v2.0.5 - Add modal size block to baseModal.html.twig
 
 # Installation
-To install this bundle, first you need to have jQuery and Bootstrap installed.
+To install this bundle, first you need to have jQuery3 and Bootstrap4 installed.
 
 Then you need to require this bundle:
 
