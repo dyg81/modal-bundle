@@ -1,5 +1,5 @@
 <div id="{% block modalId %}base-modal{% endblock %}" class="modal {% block modalEffects %}fade{% endblock %}" {% block modalBackdrop %}{% endblock %} role="dialog" tabindex="-1">
-  <div class="modal-dialog">
+  <div class="modal-dialog {% block modalSize %}{% endblock %}">
     <div class="modal-content">
         {% block modalContent %}
             <div class="modal-header">
