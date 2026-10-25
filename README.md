@@ -1,3 +1,6 @@
+> ⚠️ **The `3.x` branch is under development** (Symfony 6.4/7.4 + Bootstrap 5, without jQuery).
+> It is not yet ready for use. For the current stable version, please use the `2.x` branch.
+
 # Overview
 This symfony bundle is a fork of [Rares/ModalBundle](https://packagist.org/packages/rares/modal-bundle) which is no longer maintained.
 
