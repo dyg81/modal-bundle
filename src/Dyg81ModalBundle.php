@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Dyg81\ModalBundle;
 
-use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 
-class Dyg81ModalBundle extends Bundle
+final class Dyg81ModalBundle extends AbstractBundle
 {
-    public function getPath(): string
+    /**
+     * @param array<string, mixed> $config
+     */
+    public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
-        return \dirname(__DIR__);
+        $container->import('../config/services.php');
     }
 }
