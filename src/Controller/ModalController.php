@@ -5,21 +5,20 @@ declare(strict_types=1);
 namespace Dyg81\ModalBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 
+/**
+ * @author Donald Yañez González <donald.yanez@gmail.com>
+ * @author Rares Serban <raresserban96@gmail.com>
+ */
 class ModalController extends AbstractController
 {
     /**
-     * Helper function to display a simple translatable message in a modal.
-     * The link to this route should have the attributes:
-     *  class: modal-open.
-     *
-     * @Route("/modal/open/{message}", name="dyg81_modal_open_message")
-     *
-     * @author Donald Yañez González <donald.yanez@gmail.com>
-     * @author Rares Serban <raresserban96@gmail.com>
+     * Displays a simple message in a modal.
      */
-    public function openMessageModalAction($message)
+    #[Route('/open/{message}', name: 'dyg81_modal_open_message', methods: ['GET'])]
+    public function openMessageModalAction(string $message): Response
     {
         return $this->render('@Dyg81Modal/messageModal.html.twig', [
             'message' => $message,
@@ -27,17 +26,10 @@ class ModalController extends AbstractController
     }
 
     /**
-     * Helper function to open a simple confirm modal.
-     * The link to this route should have the attributes:
-     *  class: modal-open-confirm
-     *  data-modal-href: {{ path('dyg81_modal_open_confirm') }}.
-     *
-     * @Route("/modal/confirm", name="dyg81_modal_open_confirm")
-     *
-     * @author Donald Yañez González <donald.yanez@gmail.com>
-     * @author Rares Serban <raresserban96@gmail.com>
+     * Displays a simple confirmation modal.
      */
-    public function openConfirmModalAction()
+    #[Route('/confirm', name: 'dyg81_modal_open_confirm', methods: ['GET'])]
+    public function openConfirmModalAction(): Response
     {
         return $this->render('@Dyg81Modal/baseConfirmModal.html.twig');
     }
