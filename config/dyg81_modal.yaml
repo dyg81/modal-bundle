@@ -1,0 +1,3 @@
+dyg81_modal:
+    resource: '@Dyg81ModalBundle/config/routes.php'
+    prefix: /modal

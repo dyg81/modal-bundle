@@ -6,9 +6,13 @@ versioning according to [SemVer](https://semver.org/lang/es/).
 ## [Unreleased] - 3.0.0 (in development)
 
 ### Changed
-- Requires PHP 8.1+ and Symfony 6.4 / 7.4.
-- Removed dependency on `sensio/framework-extra-bundle`.
+- The bundle now uses `AbstractBundle` (`Dyg81ModalExtension` has been removed).
+- Services are defined in `config/services.php`.
+- Routes use PHP attributes, with the prefix defined by the application.
 
-### Planned
-- Rewrite using `AbstractBundle` and attribute-based routing.
-- Frontend without jQuery, built on Bootstrap 5.3.
+### Added
+- Configuration options: `dyg81_modal.translation_domain` and `dyg81_modal.default_modal_id`.
+- Functional test suite, including a test kernel.
+
+### Removed
+- `config/services.yml` and `DependencyInjection/Dyg81ModalExtension.php`.
