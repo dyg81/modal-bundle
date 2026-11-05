@@ -107,12 +107,22 @@ describe('dynamic modal controls', () => {
     let ajaxSpy;
 
     function mockAjax(responseHtml) {
-        ajaxSpy = jest.spyOn($, 'ajax').mockImplementation(() => ({
-            done: function(callback) {
-                callback(responseHtml || '<div id="base-modal" class="modal"><div class="modal-body">Mock</div></div>');
-                return this;
-            },
-        }));
+        ajaxSpy = jest.spyOn($, 'ajax').mockImplementation(() => {
+            var response = responseHtml || '<div id="base-modal" class="modal"><div class="modal-body">Mock</div></div>';
+            var mock = {
+                done: function(callback) {
+                    callback(response);
+                    return mock;
+                },
+                fail: function() {
+                    return mock;
+                },
+                always: function() {
+                    return mock;
+                },
+            };
+            return mock;
+        });
     }
 
     afterEach(() => {
@@ -330,5 +340,158 @@ describe('form submission with the initiating control', () => {
         document.getElementById('dup-form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
 
         expect(ajaxSpy).toHaveBeenCalledTimes(2);
+    });
+});
+
+describe('AJAX failures and unexpected responses', () => {
+    let ajaxSpy;
+
+    function mockReject(status, textStatus, errorThrown) {
+        return function() {
+            return $.Deferred().reject({status: status}, textStatus, errorThrown).promise();
+        };
+    }
+
+    afterEach(() => {
+        $('.modal').remove();
+        $('.ajax-progress').remove();
+        $('.modal-error-message').remove();
+        $('#test-fixture').remove();
+        if (ajaxSpy) {
+            ajaxSpy.mockRestore();
+            ajaxSpy = null;
+        }
+    });
+
+    it('removes the throbber after an HTTP error', () => {
+        $('<div id="test-fixture"><a href="/modal" class="modal-open">Open</a></div>').appendTo(document.body);
+        ajaxSpy = jest.spyOn($, 'ajax').mockImplementation(mockReject(500, 'error', 'Internal Server Error'));
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('#test-fixture .modal-open').trigger('click');
+
+        expect($('.ajax-progress').length).toBe(0);
+    });
+
+    it('emits modal:error with reason http-error on a 500 response', () => {
+        $('<div id="test-fixture"><a href="/modal" class="modal-open">Open</a></div>').appendTo(document.body);
+        const errorHandler = jest.fn();
+        $(document).on('modal:error.test', errorHandler);
+        ajaxSpy = jest.spyOn($, 'ajax').mockImplementation(mockReject(500, 'error', 'Internal Server Error'));
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('#test-fixture .modal-open').trigger('click');
+
+        expect(errorHandler).toHaveBeenCalledTimes(1);
+        expect(errorHandler.mock.calls[0][1].reason).toBe('http-error');
+        $(document).off('modal:error.test');
+    });
+
+    it('emits modal:error with reason timeout', () => {
+        $('<div id="test-fixture"><a href="/modal" class="modal-open">Open</a></div>').appendTo(document.body);
+        const errorHandler = jest.fn();
+        $(document).on('modal:error.test', errorHandler);
+        ajaxSpy = jest.spyOn($, 'ajax').mockImplementation(mockReject(0, 'timeout', 'Timeout'));
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('#test-fixture .modal-open').trigger('click');
+
+        expect(errorHandler.mock.calls[0][1].reason).toBe('timeout');
+        $(document).off('modal:error.test');
+    });
+
+    it('emits modal:error with reason network when the request has no status', () => {
+        $('<div id="test-fixture"><a href="/modal" class="modal-open">Open</a></div>').appendTo(document.body);
+        const errorHandler = jest.fn();
+        $(document).on('modal:error.test', errorHandler);
+        ajaxSpy = jest.spyOn($, 'ajax').mockImplementation(mockReject(0, 'error', 'Network Error'));
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('#test-fixture .modal-open').trigger('click');
+
+        expect(errorHandler.mock.calls[0][1].reason).toBe('network');
+        $(document).off('modal:error.test');
+    });
+
+    it('emits modal:error with reason parse-error on invalid JSON', () => {
+        $('<div id="test-fixture"><form id="json-form" method="POST" action="/edit" class="modal-open-from-form">' +
+            '<button type="submit">Go</button>' +
+        '</form></div>').appendTo(document.body);
+        const errorHandler = jest.fn();
+        $(document).on('modal:error.test', errorHandler);
+        ajaxSpy = jest.spyOn($, 'ajax').mockImplementation(mockReject(200, 'parsererror', 'Parse Error'));
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        document.getElementById('json-form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+
+        expect(errorHandler.mock.calls[0][1].reason).toBe('parse-error');
+        $(document).off('modal:error.test');
+    });
+
+    it('does not append a full HTML document as a modal fragment', () => {
+        $('<div id="test-fixture"><a href="/modal" class="modal-open">Open</a></div>').appendTo(document.body);
+        const errorHandler = jest.fn();
+        $(document).on('modal:error.test', errorHandler);
+        ajaxSpy = jest.spyOn($, 'ajax').mockImplementation(() => {
+            return $.Deferred().resolve('<!DOCTYPE html><html><body><div class="modal"></div></body></html>').promise();
+        });
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('#test-fixture .modal-open').trigger('click');
+
+        expect($('.modal').length).toBe(0);
+        expect(errorHandler.mock.calls[0][1].reason).toBe('unexpected-response');
+        $(document).off('modal:error.test');
+    });
+
+    it('does not replace a page form with a full HTML document', () => {
+        $('<div id="test-fixture"><form id="page-form" method="POST" action="/edit" class="modal-open-from-form">' +
+            '<button type="submit">Go</button>' +
+        '</form></div>').appendTo(document.body);
+        const errorHandler = jest.fn();
+        $(document).on('modal:error.test', errorHandler);
+        ajaxSpy = jest.spyOn($, 'ajax').mockImplementation(() => {
+            return $.Deferred().resolve('<!DOCTYPE html><html><body><form id="page-form"></form></body></html>').promise();
+        });
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        document.getElementById('page-form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+
+        expect($('#page-form').length).toBe(1);
+        expect(errorHandler.mock.calls[0][1].reason).toBe('unexpected-response');
+        $(document).off('modal:error.test');
+    });
+
+    it('lets the host suppress the default error message', () => {
+        $('<div id="test-fixture"><a href="/modal" class="modal-open">Open</a></div>').appendTo(document.body);
+        $(document).on('modal:error.test', function(event) {
+            event.preventDefault();
+        });
+        ajaxSpy = jest.spyOn($, 'ajax').mockImplementation(mockReject(500, 'error', 'Error'));
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('#test-fixture .modal-open').trigger('click');
+
+        expect($('.modal-error-message').length).toBe(0);
+        $(document).off('modal:error.test');
+    });
+
+    it('allows the user to retry after an error', () => {
+        $('<div id="test-fixture"><a href="/modal" class="modal-open">Open</a></div>').appendTo(document.body);
+        let callCount = 0;
+        ajaxSpy = jest.spyOn($, 'ajax').mockImplementation(() => {
+            callCount++;
+            if (callCount === 1) {
+                return $.Deferred().reject({status: 500}, 'error', 'Error').promise();
+            }
+            return $.Deferred().resolve('<div id="base-modal" class="modal"><div class="modal-body">OK</div></div>').promise();
+        });
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('#test-fixture .modal-open').trigger('click');
+        $('#test-fixture .modal-open').trigger('click');
+
+        expect(ajaxSpy).toHaveBeenCalledTimes(2);
+        expect($('#base-modal').length).toBe(1);
     });
 });

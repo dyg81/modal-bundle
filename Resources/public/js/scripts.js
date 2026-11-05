@@ -39,12 +39,19 @@ modalFunctions.openModal = function(event) {
 
     // Make the modal request only if a url exists.
     if (href) {
-        var throbber = modalFunctions.addProgressThrobber($(this));
+        var trigger = $(this);
+        var throbber = modalFunctions.addProgressThrobber(trigger);
 
-        $.ajax({
-           url: href,
-        }).done(function(data) {
-            throbber.remove();
+        modalFunctions.trackRequest($.ajax({
+            url: href,
+        }), {throbber: throbber, trigger: trigger}).done(function(data) {
+            if (!modalFunctions.isFragment(data)) {
+                modalFunctions.emitError({
+                    reason: 'unexpected-response',
+                    trigger: trigger,
+                });
+                return;
+            }
             modalFunctions.displayModal(data, '#' + modalId);
         });
     }
@@ -91,18 +98,20 @@ modalFunctions.bindFormModalShow = function(modalId) {
             // When submitting the form, do a request and see if we get
             // a redirect response, which should indicate that the form
             // was successfully submitted.
-            $.ajax({
+            modalFunctions.trackRequest($.ajax({
                 url: $(form).attr('action'),
                 type: $(form).attr('method'),
                 data: formData,
                 contentType: false,
                 processData: false,
                 cache: false,
-            }).done(function(data) {
+            }), {throbber: throbber, form: form, trigger: throbberTarget}).done(function(data) {
                 var isJson = typeof data === 'object' && data !== null;
+                var detail = {form: form, trigger: throbberTarget};
 
                 if (isJson && data.modal && data.redirect) {
                     // A response cannot both open a modal and redirect.
+                    modalFunctions.emitError($.extend({reason: 'unexpected-response'}, detail));
                     return;
                 }
 
@@ -117,12 +126,15 @@ modalFunctions.bindFormModalShow = function(modalId) {
                     // If the form was not successfully submitted,
                     // reload the modal with the new data, which will also
                     // include any form errors.
+                    if (!modalFunctions.isFragment(data)) {
+                        modalFunctions.emitError($.extend({reason: 'unexpected-response'}, detail));
+                        return;
+                    }
                     modal.modal('hide');
                     modalFunctions.displayModal(data, modalId);
+                } else {
+                    modalFunctions.emitError($.extend({reason: 'unexpected-response'}, detail));
                 }
-            }).always(function() {
-                throbber.remove();
-                $(form).removeData('dyg81-submitter');
             });
         });
     };
@@ -149,10 +161,16 @@ modalFunctions.openConfirmModal = function(event, options) {
         if (modalHref) {
             var throbber = modalFunctions.addProgressThrobber(element);
 
-            $.ajax({
-               url: modalHref,
-            }).done(function(data) {
-                throbber.remove();
+            modalFunctions.trackRequest($.ajax({
+                url: modalHref,
+            }), {throbber: throbber, trigger: element}).done(function(data) {
+                if (!modalFunctions.isFragment(data)) {
+                    modalFunctions.emitError({
+                        reason: 'unexpected-response',
+                        trigger: element,
+                    });
+                    return;
+                }
 
                 $("body").append(data);
 
@@ -224,11 +242,17 @@ modalFunctions.openModalFromForm = function(event, options) {
     // When submitting the form, do a request and see if we get a
     // ModalOpenResponse, which should indicate that the form was successfully
     // submitted and a modal should be opened from the rendered HTML.
-    $.ajax(ajaxOptions).done(function(data) {
+    modalFunctions.trackRequest($.ajax(ajaxOptions), {
+        throbber: throbber,
+        form: form,
+        trigger: throbberTarget,
+    }).done(function(data) {
         var isJson = typeof data === 'object' && data !== null;
+        var detail = {form: form, trigger: throbberTarget};
 
         if (isJson && data.modal && data.redirect) {
             // A response cannot both open a modal and redirect.
+            modalFunctions.emitError($.extend({reason: 'unexpected-response'}, detail));
             return;
         }
 
@@ -240,11 +264,14 @@ modalFunctions.openModalFromForm = function(event, options) {
             // Validation errors were returned: replace the originating form
             // with the matching fragment from the response instead of reloading
             // the whole page.
-            modalFunctions.replacePageForm(form, data);
+            if (!modalFunctions.isFragment(data)) {
+                modalFunctions.emitError($.extend({reason: 'unexpected-response'}, detail));
+                return;
+            }
+            modalFunctions.replacePageForm(form, data, detail);
+        } else {
+            modalFunctions.emitError($.extend({reason: 'unexpected-response'}, detail));
         }
-    }).always(function() {
-        throbber.remove();
-        $(form).removeData('dyg81-submitter');
     });
 };
 
@@ -304,15 +331,19 @@ modalFunctions.getSubmitter = function(form, event) {
  * If either side is missing, a `modal:error` event is triggered and the
  * original form is left untouched.
  */
-modalFunctions.replacePageForm = function(form, html) {
+modalFunctions.replacePageForm = function(form, html, detail) {
+    detail = detail || {form: form};
+
+    if (!modalFunctions.isFragment(html)) {
+        modalFunctions.emitError($.extend({reason: 'unexpected-response'}, detail));
+        return;
+    }
+
     var $form = $(form);
     var targetId = $form.attr('data-modal-error-target') || $form.attr('id');
 
     if (!targetId) {
-        $(document).trigger('modal:error', [{
-            reason: 'missing-error-target',
-            form: form,
-        }]);
+        modalFunctions.emitError($.extend({reason: 'missing-error-target'}, detail));
         return;
     }
 
@@ -338,14 +369,101 @@ modalFunctions.replacePageForm = function(form, html) {
     });
 
     if (!$replacement.length) {
-        $(document).trigger('modal:error', [{
-            reason: 'missing-error-target',
-            form: form,
-        }]);
+        modalFunctions.emitError($.extend({reason: 'missing-error-target'}, detail));
         return;
     }
 
     $form.replaceWith($replacement);
+};
+
+/**
+ * Check whether a response looks like a modal fragment instead of a full
+ * document. Endpoints that expect fragments should reject complete HTML pages.
+ */
+modalFunctions.isFragment = function(html) {
+    var trimmed = $.trim(typeof html === 'string' ? html : '');
+
+    return trimmed.length > 0
+        && !/^<!DOCTYPE/i.test(trimmed)
+        && !/^<html/i.test(trimmed);
+};
+
+/**
+ * Emit a modal:error event and, unless a host listener prevents it, show a
+ * small non-intrusive message to the user.
+ */
+modalFunctions.emitError = function(detail) {
+    var event = $.Event('modal:error');
+    $(document).trigger(event, [detail]);
+
+    if (!event.isDefaultPrevented()) {
+        modalFunctions.showError(detail);
+    }
+};
+
+/**
+ * Display a short, dismissible error message. Host applications can suppress
+ * this by calling event.preventDefault() in a modal:error listener.
+ */
+modalFunctions.showError = function(detail) {
+    var messages = {
+        'timeout': 'The request timed out. Please try again.',
+        'network': 'The connection failed. Please check your network and try again.',
+        'abort': 'The request was cancelled.',
+        'parse-error': 'The server response could not be parsed.',
+        'unexpected-response': 'The server returned an unexpected response.',
+        'missing-error-target': 'The form could not be updated because the response did not contain the expected fragment.',
+    };
+    var message = messages[detail.reason] || 'An unexpected error occurred. Please try again.';
+
+    var $alert = $('<div>', {
+        'class': 'modal-error-message alert alert-danger',
+        'role': 'alert',
+    }).text(message);
+
+    $('.modal-error-message').remove();
+    $('body').append($alert);
+
+    setTimeout(function() {
+        $alert.remove();
+    }, 5000);
+};
+
+/**
+ * Attach shared failure and cleanup handlers to a jQuery AJAX request.
+ */
+modalFunctions.trackRequest = function(jqXHR, detail) {
+    detail = detail || {};
+
+    return jqXHR.fail(function(jqXHRObj, textStatus, errorThrown) {
+        var reason = 'http-error';
+
+        if (textStatus === 'timeout') {
+            reason = 'timeout';
+        } else if (textStatus === 'abort') {
+            reason = 'abort';
+        } else if (textStatus === 'parsererror') {
+            reason = 'parse-error';
+        } else if (jqXHRObj.status === 0) {
+            reason = 'network';
+        } else if (jqXHRObj.status >= 400) {
+            reason = 'http-error';
+        }
+
+        modalFunctions.emitError($.extend({
+            reason: reason,
+            jqXHR: jqXHRObj,
+            textStatus: textStatus,
+            errorThrown: errorThrown,
+        }, detail));
+    }).always(function() {
+        if (detail.throbber) {
+            detail.throbber.remove();
+        }
+        if (detail.form) {
+            $(detail.form).removeData('dyg81-submitter');
+        }
+    });
 };
 
 /**

@@ -22,7 +22,7 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
     v2.0.3 - Add backdrop block to baseModal.html.twig
     v2.0.4 - Fix wrong code in the installation section
     v2.0.5 - Add modal size block to baseModal.html.twig
-    v3.0.0 (unreleased) - Restore classic bundle resource layout; replace the GPL loading gif with an accessible CSS-only spinner; add Symfony 3.4 Flex/4.4/5.4 support, YAML routing, the Dyg81ModalBundle translation domain, a validated modal/redirect response protocol, delegated event handling via `modalFunctions.modifyElements()` and form submissions that include the initiating submit button.
+    v3.0.0 (unreleased) - Restore classic bundle resource layout; replace the GPL loading gif with an accessible CSS-only spinner; add Symfony 3.4 Flex/4.4/5.4 support, YAML routing, the Dyg81ModalBundle translation domain, a validated modal/redirect response protocol, delegated event handling via `modalFunctions.modifyElements()`, form submissions that include the initiating submit button and centralized AJAX error handling with `modal:error` events.
 
 # Installation
 To install this bundle, first you need to have jQuery3 and Bootstrap4 installed.
@@ -249,6 +249,17 @@ What you have to do is put the class **modal-open-from-form** on your form. The 
 If validation errors are returned as HTML, the originating form is replaced by the matching fragment from the response. The fragment is located by `data-modal-error-target` on the form, or by the form's own `id`. If the response does not contain that fragment, a `modal:error` event is triggered and the original form is left untouched.
 
 To open a modal when the form is successfully submitted, return a `ModalOpenResponse` with the **rendered modal HTML**. The first argument is the HTML string, the optional second argument is the modal id.
+
+### Handling AJAX errors and session expiry
+
+Every AJAX request made by the bundle is cleaned up on failure, so throbbers are always removed and controls are left usable for a retry.
+
+When a request fails, an invalid response is received or a fragment cannot be matched, the bundle triggers a `modal:error` event on `document` with a detail object that includes `reason`, `trigger`, `form` (when applicable), `jqXHR`, `textStatus` and `errorThrown`. Host applications can listen to this event to provide their own error UI. If the listener calls `event.preventDefault()`, the bundle's small built-in alert is not shown.
+
+For session expiry, the host should return one of the safe responses below. A login page returned as HTML 200 will **not** be inserted automatically; it will be treated as an unexpected response and reported through `modal:error`.
+
+- HTTP 401/403 (the bundle emits `modal:error` with `reason: 'http-error'`).
+- A JSON `ModalRedirectResponse` such as `{"redirect": "/login"}`.
 
 Example response:
 

@@ -19,6 +19,8 @@ All notable changes to `dyg81/modal-bundle` are documented in this file.
 - Delegated event handling for all modal triggers and a `modalFunctions.modifyElements(root)` helper that accepts a selector, DOM element or jQuery object.
 - Form submissions now include the initiating submit button value and support `GET` query-string serialization.
 - Validation errors returned for `.modal-open-from-form` replace the originating form fragment instead of reloading the whole page.
+- Centralized AJAX request tracking with cleanup on failure and a `modal:error` event that hosts can listen to or suppress.
+- Modal and form fragments reject full HTML documents (`<!DOCTYPE`/`<html>`) and emit `modal:error` with `reason: 'unexpected-response'`.
 
 ### Removed
 - `Resources/public/images/throbber-active.gif`.
