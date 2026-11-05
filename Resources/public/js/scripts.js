@@ -1,5 +1,8 @@
 var modalFunctions = {};
 
+// Loading text exposed for host applications that need a different label.
+modalFunctions.loadingText = 'Loading…';
+
 /**
  * Add a progress throbber after the element when an ajax request is made.
  */
@@ -10,9 +13,13 @@ modalFunctions.addProgressThrobber = function(elem) {
         divClass = ' ajax-progress-' + elem.attr('id');
     }
 
-    var div = $("<div>", {"class": "ajax-progress ajax-progress-throbber" + divClass});
-    var throbber = $("<div>", {"class": "throbber"});
-    div.append(throbber);
+    var div = $('<div>', {
+        'class': 'ajax-progress ajax-progress-throbber' + divClass,
+        'role': 'status'
+    });
+    var throbber = $('<div>', {'class': 'throbber'});
+    var srText = $('<span>', {'class': 'sr-only'}).text(modalFunctions.loadingText);
+    div.append(throbber).append(srText);
     elem.after(div);
 
     return div;

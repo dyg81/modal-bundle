@@ -27,3 +27,41 @@ describe('modal bundle baseline', () => {
         expect(typeof window.modalFunctions.modifyElements).toBe('function');
     });
 });
+
+describe('accessible loading indicator', () => {
+    afterEach(() => {
+        $('.ajax-progress').remove();
+        $('#test-fixture').remove();
+    });
+
+    it('renders a status region with a spinner and screen-reader text', () => {
+        const $button = $('<button>').text('Open').appendTo(document.body);
+        const $throbber = window.modalFunctions.addProgressThrobber($button);
+
+        expect($throbber.attr('role')).toBe('status');
+        expect($throbber.find('.throbber').length).toBe(1);
+        expect($throbber.find('.sr-only').text()).toBe('Loading…');
+        expect($button.next().is($throbber)).toBe(true);
+    });
+
+    it('uses a custom loadingText when configured', () => {
+        const originalText = window.modalFunctions.loadingText;
+        window.modalFunctions.loadingText = 'Please wait';
+
+        const $button = $('<button>').text('Open').appendTo(document.body);
+        const $throbber = window.modalFunctions.addProgressThrobber($button);
+
+        expect($throbber.find('.sr-only').text()).toBe('Please wait');
+
+        window.modalFunctions.loadingText = originalText;
+    });
+
+    it('can be removed without leaving orphan elements', () => {
+        const $button = $('<button>').text('Open').appendTo(document.body);
+        const $throbber = window.modalFunctions.addProgressThrobber($button);
+
+        $throbber.remove();
+
+        expect($button.next('.ajax-progress').length).toBe(0);
+    });
+});

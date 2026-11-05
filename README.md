@@ -22,6 +22,7 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
     v2.0.3 - Add backdrop block to baseModal.html.twig
     v2.0.4 - Fix wrong code in the installation section
     v2.0.5 - Add modal size block to baseModal.html.twig
+    v3.0.0 (unreleased) - Restore classic bundle resource layout; replace the GPL loading gif with an accessible CSS-only spinner.
 
 # Installation
 To install this bundle, first you need to have jQuery3 and Bootstrap4 installed.
@@ -75,7 +76,7 @@ The ModalBundle provides two basic modal types: a content modal, which can also 
 
 Keep in mind that this bundle only supports one modal open at a time, because this is the default Bootstrap behaviour.
 
-Also, when doing ajax request, after the element that was clicked a div element is added with the classes **ajax-progress** and **ajax-progress-throbber**, and a dynamic class if the clicked element has an id, **ajax-progress-ELEMENTID**. Inside this div there is also another div with the class **throbber** that renders a small gif file. If you do not want to use the default loading gif, you should not include the css file in the project or customize the css however you want.
+Also, when doing ajax request, after the element that was clicked a div element is added with the classes **ajax-progress** and **ajax-progress-throbber**, and a dynamic class if the clicked element has an id, **ajax-progress-ELEMENTID**. The throbber is rendered with a CSS-only animation and a screen-reader-only `<span class="sr-only">` that announces the loading state. You can change the announcement text by setting `modalFunctions.loadingText` before any modal is opened. If you do not want to use the default loading indicator, simply do not include the css file or customize it.
 
 ### Content Modal
 The content modal is the basic modal type which can be used to display pretty much any content inside a modal.
