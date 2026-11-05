@@ -78,25 +78,27 @@ modalFunctions.bindFormModalShow = function(modalId) {
             event.preventDefault();
             event.stopImmediatePropagation();
 
-            var elem = $(this).find(':focus');
-            var throbber = modalFunctions.addProgressThrobber(elem);
+            var form = this;
+            var submitter = modalFunctions.getSubmitter(form, event);
+            var throbberTarget = submitter.length ? submitter : $(form).find(':submit:first');
+            var throbber = modalFunctions.addProgressThrobber(throbberTarget.length ? throbberTarget : $(form));
 
-            var formData = new FormData(this);
-            formData.append('submit', elem.attr('value'));
+            var formData = new FormData(form);
+            if (submitter.length && submitter.attr('name')) {
+                formData.append(submitter.attr('name'), submitter.val());
+            }
 
             // When submitting the form, do a request and see if we get
             // a redirect response, which should indicate that the form
             // was successfully submitted.
             $.ajax({
-                url: $(this).attr('action'),
-                type: $(this).attr('method'),
+                url: $(form).attr('action'),
+                type: $(form).attr('method'),
                 data: formData,
                 contentType: false,
                 processData: false,
                 cache: false,
             }).done(function(data) {
-                throbber.remove();
-
                 var isJson = typeof data === 'object' && data !== null;
 
                 if (isJson && data.modal && data.redirect) {
@@ -118,6 +120,9 @@ modalFunctions.bindFormModalShow = function(modalId) {
                     modal.modal('hide');
                     modalFunctions.displayModal(data, modalId);
                 }
+            }).always(function() {
+                throbber.remove();
+                $(form).removeData('dyg81-submitter');
             });
         });
     };
@@ -187,24 +192,39 @@ modalFunctions.openModalFromForm = function(event, options) {
     event.preventDefault();
     event.stopImmediatePropagation();
 
-    var elem = $(this).find(':focus');
-    var throbber = modalFunctions.addProgressThrobber(elem);
+    var form = this;
+    var submitter = modalFunctions.getSubmitter(form, event);
+    var throbberTarget = submitter.length ? submitter : $(form).find(':submit:first');
+    var throbber = modalFunctions.addProgressThrobber(throbberTarget.length ? throbberTarget : $(form));
 
-    var formData = new FormData(this);
-    formData.append('submit', elem.attr('value'));
-
-    // When submitting the form, do a request and see if we get
-    // a open modal response, which should indicate that the form
-    // was successfully submitted and we can open the modal from the url
-    // in that response.
-    $.ajax({
-        url: $(this).attr('action'),
-        type: $(this).attr('method'),
-        data: formData,
-        contentType: false,
-        processData: false,
+    var action = $(form).attr('action') || '';
+    var method = ($(form).attr('method') || 'GET').toUpperCase();
+    var ajaxOptions = {
+        url: action,
+        type: method,
         cache: false,
-    }).done(function(data) {
+    };
+
+    if (method === 'GET') {
+        var fields = $(form).serializeArray();
+        if (submitter.length && submitter.attr('name')) {
+            fields.push({name: submitter.attr('name'), value: submitter.val()});
+        }
+        ajaxOptions.url = action + (action.indexOf('?') === -1 ? '?' : '&') + $.param(fields);
+    } else {
+        var formData = new FormData(form);
+        if (submitter.length && submitter.attr('name')) {
+            formData.append(submitter.attr('name'), submitter.val());
+        }
+        ajaxOptions.data = formData;
+        ajaxOptions.contentType = false;
+        ajaxOptions.processData = false;
+    }
+
+    // When submitting the form, do a request and see if we get a
+    // ModalOpenResponse, which should indicate that the form was successfully
+    // submitted and a modal should be opened from the rendered HTML.
+    $.ajax(ajaxOptions).done(function(data) {
         var isJson = typeof data === 'object' && data !== null;
 
         if (isJson && data.modal && data.redirect) {
@@ -213,18 +233,18 @@ modalFunctions.openModalFromForm = function(event, options) {
         }
 
         if (isJson && data.modal) {
-            throbber.remove();
             modalFunctions.handleOpenResponses(data);
         } else if (isJson && data.redirect) {
-            throbber.remove();
             window.location.href = data.redirect;
         } else if (typeof data === 'string') {
-            // Reload the whole page with the new data, which should
-            // include all form errors.
-            document.open();
-            document.write(data);
-            document.close();
+            // Validation errors were returned: replace the originating form
+            // with the matching fragment from the response instead of reloading
+            // the whole page.
+            modalFunctions.replacePageForm(form, data);
         }
+    }).always(function() {
+        throbber.remove();
+        $(form).removeData('dyg81-submitter');
     });
 };
 
@@ -250,6 +270,83 @@ modalFunctions.handleOpenResponses = function(data) {
 
     modalFunctions.displayModal(data.modal, modalId);
 }
+
+/**
+ * Remember which submit button initiated a form submission.
+ */
+modalFunctions.recordSubmitter = function() {
+    var button = $(this);
+    button.closest('form').data('dyg81-submitter', button);
+};
+
+/**
+ * Return the submit button that initiated the current form submission.
+ */
+modalFunctions.getSubmitter = function(form, event) {
+    var submitter = null;
+
+    if (event.originalEvent && event.originalEvent.submitter) {
+        submitter = $(event.originalEvent.submitter);
+    }
+
+    if (!submitter || !submitter.length) {
+        submitter = $(form).data('dyg81-submitter');
+    }
+
+    return submitter || $();
+};
+
+/**
+ * Replace a page form with the matching fragment from a validation response.
+ *
+ * The response is parsed without executing scripts. The form to replace is
+ * identified by `data-modal-error-target` or, failing that, by its own `id`.
+ * If either side is missing, a `modal:error` event is triggered and the
+ * original form is left untouched.
+ */
+modalFunctions.replacePageForm = function(form, html) {
+    var $form = $(form);
+    var targetId = $form.attr('data-modal-error-target') || $form.attr('id');
+
+    if (!targetId) {
+        $(document).trigger('modal:error', [{
+            reason: 'missing-error-target',
+            form: form,
+        }]);
+        return;
+    }
+
+    var $parsed = $('<div>').append($.parseHTML(html, document, false));
+    var $replacement = $();
+
+    $parsed.contents().each(function() {
+        var $node = $(this);
+
+        if ($node.attr('id') === targetId) {
+            $replacement = $node;
+            return false;
+        }
+
+        var $found = $node.find('[id]').filter(function() {
+            return $(this).attr('id') === targetId;
+        });
+
+        if ($found.length) {
+            $replacement = $found.first();
+            return false;
+        }
+    });
+
+    if (!$replacement.length) {
+        $(document).trigger('modal:error', [{
+            reason: 'missing-error-target',
+            form: form,
+        }]);
+        return;
+    }
+
+    $form.replaceWith($replacement);
+};
 
 /**
  * Bind the handlers to links and forms.
@@ -281,6 +378,11 @@ modalFunctions.modifyElements = function(baseElement) {
     // When a confirm modal is open, pressing its confirm button should re-trigger
     // the action of the element that originally opened the modal.
     $root.on('click.dyg81Modal', '.modal-btn-confirm', modalFunctions.confirmModalButton);
+
+    // Remember the submit button used for each form so it can be included in
+    // the AJAX payload even when the browser does not provide
+    // event.originalEvent.submitter.
+    $root.on('click.dyg81Modal', 'form :submit', modalFunctions.recordSubmitter);
 
     // The modal-open-from-form class can be used on a form element.
     // If the form is successfully submitted, a response of type ModalOpenResponse

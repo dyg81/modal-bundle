@@ -22,7 +22,7 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
     v2.0.3 - Add backdrop block to baseModal.html.twig
     v2.0.4 - Fix wrong code in the installation section
     v2.0.5 - Add modal size block to baseModal.html.twig
-    v3.0.0 (unreleased) - Restore classic bundle resource layout; replace the GPL loading gif with an accessible CSS-only spinner; add Symfony 3.4 Flex/4.4/5.4 support, YAML routing, the Dyg81ModalBundle translation domain, a validated modal/redirect response protocol and delegated event handling via `modalFunctions.modifyElements()`.
+    v3.0.0 (unreleased) - Restore classic bundle resource layout; replace the GPL loading gif with an accessible CSS-only spinner; add Symfony 3.4 Flex/4.4/5.4 support, YAML routing, the Dyg81ModalBundle translation domain, a validated modal/redirect response protocol, delegated event handling via `modalFunctions.modifyElements()` and form submissions that include the initiating submit button.
 
 # Installation
 To install this bundle, first you need to have jQuery3 and Bootstrap4 installed.
@@ -239,9 +239,14 @@ return $this->createFormBuilder()
 ```
 
 ### Open modal after successful form submission
-Finally, with this bundle it is also possible to open a modal after a form has been successfully submitted without reloading the page. This is useful if you want to have a multi step form form example.
+Finally, with this bundle it is also possible to open a modal after a form has been successfully submitted without reloading the page. This is useful if you want to have a multi-step form, for example.
 
-What you have to do is put the class **modal-open-from-form** on your form. The form will then be submitted using AJAX. If validation errors are returned, the form will be replaced with the server-rendered HTML; otherwise a modal will open.
+What you have to do is put the class **modal-open-from-form** on your form. The form will then be submitted using AJAX. The name and value of the submit button that initiated the request are included automatically, including when the user presses **Enter** in a field and the browser does not provide a submitter.
+
+- For `GET` forms, the data is serialized into the query string.
+- For `POST`/`multipart` forms, a `FormData` object is sent.
+
+If validation errors are returned as HTML, the originating form is replaced by the matching fragment from the response. The fragment is located by `data-modal-error-target` on the form, or by the form's own `id`. If the response does not contain that fragment, a `modal:error` event is triggered and the original form is left untouched.
 
 To open a modal when the form is successfully submitted, return a `ModalOpenResponse` with the **rendered modal HTML**. The first argument is the HTML string, the optional second argument is the modal id.
 

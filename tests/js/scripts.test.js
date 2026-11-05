@@ -191,3 +191,144 @@ describe('dynamic modal controls', () => {
         openSpy.mockRestore();
     });
 });
+
+describe('form submission with the initiating control', () => {
+    let ajaxSpy;
+    let ajaxOptions;
+
+    function mockAjax(response) {
+        ajaxOptions = null;
+        ajaxSpy = jest.spyOn($, 'ajax').mockImplementation((options) => {
+            ajaxOptions = options;
+            return $.Deferred().resolve(response).promise();
+        });
+    }
+
+    afterEach(() => {
+        $('.modal').remove();
+        $('.ajax-progress').remove();
+        $('#test-fixture').remove();
+        if (ajaxSpy) {
+            ajaxSpy.mockRestore();
+            ajaxSpy = null;
+        }
+    });
+
+    it('remembers the submit button clicked inside a form', () => {
+        $('<div id="test-fixture"><form id="f1" class="modal-open-from-form">' +
+            '<button type="submit" name="save" value="create">Create</button>' +
+        '</form></div>').appendTo(document.body);
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('#f1 button[name="save"]').trigger('click');
+        const submitter = window.modalFunctions.getSubmitter(document.getElementById('f1'), {originalEvent: {}});
+
+        expect(submitter.length).toBe(1);
+        expect(submitter.attr('name')).toBe('save');
+        expect(submitter.val()).toBe('create');
+    });
+
+    it('sends the clicked submit button value, not a hard-coded field', () => {
+        $('<div id="test-fixture"><form id="f2" method="POST" action="/post" class="modal-open-from-form">' +
+            '<input type="text" name="title" value="Hello" />' +
+            '<button type="submit" name="save" value="draft">Draft</button>' +
+            '<button type="submit" name="save" value="publish">Publish</button>' +
+        '</form></div>').appendTo(document.body);
+        mockAjax('{}');
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('#f2 button[value="publish"]').trigger('click');
+        document.getElementById('f2').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+
+        expect(ajaxOptions.data).toBeInstanceOf(FormData);
+        expect(ajaxOptions.data.get('title')).toBe('Hello');
+        expect(ajaxOptions.data.get('save')).toBe('publish');
+        expect(ajaxOptions.contentType).toBe(false);
+        expect(ajaxOptions.processData).toBe(false);
+    });
+
+    it('does not add a submitter field when the form is submitted without one', () => {
+        $('<div id="test-fixture"><form id="f3" method="POST" action="/post" class="modal-open-from-form">' +
+            '<input type="text" name="title" value="Hello" />' +
+            '<button type="submit" name="save" value="go">Go</button>' +
+        '</form></div>').appendTo(document.body);
+        mockAjax('{}');
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        document.getElementById('f3').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+
+        expect(ajaxOptions.data.get('title')).toBe('Hello');
+        expect(ajaxOptions.data.get('save')).toBe(null);
+    });
+
+    it('serializes GET forms as a query string including the submitter', () => {
+        $('<div id="test-fixture"><form id="f4" method="get" action="/search" class="modal-open-from-form">' +
+            '<input type="text" name="q" value="modal" />' +
+            '<button type="submit" name="page" value="2">Next</button>' +
+        '</form></div>').appendTo(document.body);
+        mockAjax('{}');
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('#f4 button[name="page"]').trigger('click');
+        document.getElementById('f4').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+
+        expect(ajaxOptions.type).toBe('GET');
+        expect(ajaxOptions.url).toMatch('q=modal');
+        expect(ajaxOptions.url).toMatch('page=2');
+    });
+
+    it('replaces the originating form with the matching validation fragment', () => {
+        $('<div id="test-fixture"><form id="page-form" method="POST" action="/edit" class="modal-open-from-form">' +
+            '<input type="text" name="title" value="" />' +
+            '<button type="submit" name="save" value="go">Go</button>' +
+        '</form></div>').appendTo(document.body);
+        const response = '<div class="wrapper">' +
+            '<form id="page-form" method="POST" action="/edit">' +
+                '<input type="text" name="title" value="" />' +
+                '<span class="error">Required</span>' +
+                '<button type="submit" name="save" value="go">Go</button>' +
+            '</form>' +
+        '</div>';
+        mockAjax(response);
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        document.getElementById('page-form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+
+        const $form = $('#page-form');
+        expect($form.length).toBe(1);
+        expect($form.find('.error').length).toBe(1);
+        expect($form.parent().attr('id')).toBe('test-fixture');
+    });
+
+    it('emits modal:error when the validation response does not contain the target form', () => {
+        $('<div id="test-fixture"><form id="missing-target-form" method="POST" action="/edit" class="modal-open-from-form">' +
+            '<button type="submit">Go</button>' +
+        '</form></div>').appendTo(document.body);
+        const errorHandler = jest.fn();
+        $(document).on('modal:error.test', errorHandler);
+        mockAjax('<form id="other-form"></form>');
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        document.getElementById('missing-target-form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+
+        expect(errorHandler).toHaveBeenCalledTimes(1);
+        expect(errorHandler.mock.calls[0][1].reason).toBe('missing-error-target');
+
+        $(document).off('modal:error.test');
+    });
+
+    it('does not duplicate handlers after replacing a form', () => {
+        $('<div id="test-fixture"><form id="dup-form" method="POST" action="/edit" class="modal-open-from-form">' +
+            '<button type="submit" name="save" value="go">Go</button>' +
+        '</form></div>').appendTo(document.body);
+        mockAjax('<form id="dup-form" class="modal-open-from-form" method="POST" action="/edit">' +
+            '<button type="submit" name="save" value="go">Go</button>' +
+        '</form>');
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        document.getElementById('dup-form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+        document.getElementById('dup-form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+
+        expect(ajaxSpy).toHaveBeenCalledTimes(2);
+    });
+});

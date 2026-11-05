@@ -17,6 +17,8 @@ All notable changes to `dyg81/modal-bundle` are documented in this file.
 - A dedicated `Dyg81ModalBundle` translation domain for all bundle messages.
 - Unit tests for the modal response classes.
 - Delegated event handling for all modal triggers and a `modalFunctions.modifyElements(root)` helper that accepts a selector, DOM element or jQuery object.
+- Form submissions now include the initiating submit button value and support `GET` query-string serialization.
+- Validation errors returned for `.modal-open-from-form` replace the originating form fragment instead of reloading the whole page.
 
 ### Removed
 - `Resources/public/images/throbber-active.gif`.
