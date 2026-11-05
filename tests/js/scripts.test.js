@@ -15,6 +15,16 @@ beforeAll(() => {
     window.eval(source);
 });
 
+afterEach(() => {
+    // Reset internal state that could leak between tests when modals are
+    // removed directly instead of through the bundle lifecycle.
+    if (window.modalFunctions) {
+        window.modalFunctions.activeModal = null;
+        window.modalFunctions.activeTrigger = null;
+        window.modalFunctions.pendingRequest = null;
+    }
+});
+
 describe('modal bundle baseline', () => {
     it('exposes the modalFunctions global', () => {
         expect(typeof window.modalFunctions).toBe('object');
@@ -109,19 +119,7 @@ describe('dynamic modal controls', () => {
     function mockAjax(responseHtml) {
         ajaxSpy = jest.spyOn($, 'ajax').mockImplementation(() => {
             var response = responseHtml || '<div id="base-modal" class="modal"><div class="modal-body">Mock</div></div>';
-            var mock = {
-                done: function(callback) {
-                    callback(response);
-                    return mock;
-                },
-                fail: function() {
-                    return mock;
-                },
-                always: function() {
-                    return mock;
-                },
-            };
-            return mock;
+            return $.Deferred().resolve(response).promise();
         });
     }
 
@@ -493,5 +491,101 @@ describe('AJAX failures and unexpected responses', () => {
 
         expect(ajaxSpy).toHaveBeenCalledTimes(2);
         expect($('#base-modal').length).toBe(1);
+    });
+});
+
+describe('modal lifecycle and IDs', () => {
+    let ajaxSpy;
+
+    function mockAjax(responseHtml) {
+        ajaxSpy = jest.spyOn($, 'ajax').mockImplementation(() => {
+            var response = responseHtml || '<div id="base-modal" class="modal"><div class="modal-body">Mock</div></div>';
+            return $.Deferred().resolve(response).promise();
+        });
+    }
+
+    afterEach(() => {
+        $('.modal').remove();
+        $('.ajax-progress').remove();
+        $('.modal-error-message').remove();
+        $('#test-fixture').remove();
+        if (ajaxSpy) {
+            ajaxSpy.mockRestore();
+            ajaxSpy = null;
+        }
+    });
+
+    it('emits modal:opened after the modal is shown', () => {
+        $('<div id="test-fixture"><a href="/modal" class="modal-open">Open</a></div>').appendTo(document.body);
+        const openedHandler = jest.fn();
+        $(document).on('modal:opened.test', openedHandler);
+        mockAjax();
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('#test-fixture .modal-open').trigger('click');
+
+        expect(openedHandler).toHaveBeenCalledTimes(1);
+        expect(openedHandler.mock.calls[0][1].modalId).toBe('base-modal');
+        $(document).off('modal:opened.test');
+    });
+
+    it('emits modal:closed after the modal is hidden and removed', () => {
+        $('<div id="test-fixture"><a href="/modal" class="modal-open">Open</a></div>').appendTo(document.body);
+        const closedHandler = jest.fn();
+        $(document).on('modal:closed.test', closedHandler);
+        mockAjax();
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('#test-fixture .modal-open').trigger('click');
+        $('#base-modal').modal('hide');
+
+        expect(closedHandler).toHaveBeenCalledTimes(1);
+        expect(closedHandler.mock.calls[0][1].modalId).toBe('base-modal');
+        expect($('#base-modal').length).toBe(0);
+        $(document).off('modal:closed.test');
+    });
+
+    it('closes an active modal before opening a new one', () => {
+        $('<div id="test-fixture">' +
+            '<a href="/first" class="modal-open">First</a>' +
+            '<a href="/second" class="modal-open" data-modal-id="other-modal">Second</a>' +
+        '</div>').appendTo(document.body);
+        let callCount = 0;
+        ajaxSpy = jest.spyOn($, 'ajax').mockImplementation(() => {
+            callCount++;
+            var response = callCount === 1
+                ? '<div id="base-modal" class="modal"><div class="modal-body">First</div></div>'
+                : '<div id="other-modal" class="modal"><div class="modal-body">Second</div></div>';
+            return $.Deferred().resolve(response).promise();
+        });
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('#test-fixture .modal-open').first().trigger('click');
+        $('#test-fixture .modal-open').last().trigger('click');
+
+        expect($('#base-modal').length).toBe(0);
+        expect($('#other-modal').length).toBe(1);
+    });
+
+    it('does not leave duplicate modals when the same id is reused', () => {
+        $('<div id="test-fixture"><a href="/modal" class="modal-open">Open</a></div>').appendTo(document.body);
+        mockAjax();
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('#test-fixture .modal-open').trigger('click');
+        $('#test-fixture .modal-open').trigger('click');
+
+        expect($('#base-modal').length).toBe(1);
+    });
+
+    it('handles modal ids that contain CSS-special characters', () => {
+        $('<div id="test-fixture"><a href="/modal" class="modal-open" data-modal-id="weird:id[1]">Open</a></div>').appendTo(document.body);
+        mockAjax('<div id="weird:id[1]" class="modal"><div class="modal-body">Weird</div></div>');
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('#test-fixture .modal-open').trigger('click');
+
+        expect(document.getElementById('weird:id[1]')).not.toBeNull();
+        expect($('#' + $.escapeSelector('weird:id[1]')).length).toBe(1);
     });
 });

@@ -21,6 +21,8 @@ All notable changes to `dyg81/modal-bundle` are documented in this file.
 - Validation errors returned for `.modal-open-from-form` replace the originating form fragment instead of reloading the whole page.
 - Centralized AJAX request tracking with cleanup on failure and a `modal:error` event that hosts can listen to or suppress.
 - Modal and form fragments reject full HTML documents (`<!DOCTYPE`/`<html>`) and emit `modal:error` with `reason: 'unexpected-response'`.
+- Serialized modal lifecycle: only one modal is open at a time, pending requests are ignored, active modals are closed before replacements are inserted and `modal:opened`/`modal:closed` events are emitted.
+- IDs are resolved with `document.getElementById` and escaped for jQuery so special characters are supported.
 
 ### Removed
 - `Resources/public/images/throbber-active.gif`.

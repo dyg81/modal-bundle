@@ -22,7 +22,7 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
     v2.0.3 - Add backdrop block to baseModal.html.twig
     v2.0.4 - Fix wrong code in the installation section
     v2.0.5 - Add modal size block to baseModal.html.twig
-    v3.0.0 (unreleased) - Restore classic bundle resource layout; replace the GPL loading gif with an accessible CSS-only spinner; add Symfony 3.4 Flex/4.4/5.4 support, YAML routing, the Dyg81ModalBundle translation domain, a validated modal/redirect response protocol, delegated event handling via `modalFunctions.modifyElements()`, form submissions that include the initiating submit button and centralized AJAX error handling with `modal:error` events.
+    v3.0.0 (unreleased) - Restore classic bundle resource layout; replace the GPL loading gif with an accessible CSS-only spinner; add Symfony 3.4 Flex/4.4/5.4 support, YAML routing, the Dyg81ModalBundle translation domain, a validated modal/redirect response protocol, delegated event handling via `modalFunctions.modifyElements()`, form submissions that include the initiating submit button, centralized AJAX error handling with `modal:error` events and a serialized modal lifecycle that closes the active modal before opening a replacement.
 
 # Installation
 To install this bundle, first you need to have jQuery3 and Bootstrap4 installed.
@@ -260,6 +260,17 @@ For session expiry, the host should return one of the safe responses below. A lo
 
 - HTTP 401/403 (the bundle emits `modal:error` with `reason: 'http-error'`).
 - A JSON `ModalRedirectResponse` such as `{"redirect": "/login"}`.
+
+### Modal lifecycle events
+
+The bundle keeps at most one modal open at a time. If a new modal is requested while another is already open, the active modal is closed and removed before the new markup is inserted, even when both use the same `id`. Clicks that arrive while a request is already in flight are ignored, so rapid double-clicks never create duplicate modals or overlapping AJAX calls.
+
+Two events are fired on `document` so the host can synchronize its own UI:
+
+- `modal:opened` after `shown.bs.modal`, with `{modal, modalId, trigger}`.
+- `modal:closed` after `hidden.bs.modal` and after the element has been removed, with `{modalId, trigger}`.
+
+`modalId` is the raw id string; the bundle resolves it with `document.getElementById` and escapes it for jQuery selectors so ids containing `.`, `:` or `[` work correctly.
 
 Example response:
 
