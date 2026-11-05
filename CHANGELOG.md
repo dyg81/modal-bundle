@@ -16,6 +16,7 @@ All notable changes to `dyg81/modal-bundle` are documented in this file.
 - Screen-reader-only loading text inside the AJAX progress indicator, configurable via `modalFunctions.loadingText`.
 - A dedicated `Dyg81ModalBundle` translation domain for all bundle messages.
 - Unit tests for the modal response classes.
+- Delegated event handling for all modal triggers and a `modalFunctions.modifyElements(root)` helper that accepts a selector, DOM element or jQuery object.
 
 ### Removed
 - `Resources/public/images/throbber-active.gif`.

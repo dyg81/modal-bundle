@@ -137,13 +137,12 @@ modalFunctions.openConfirmModal = function(event, options) {
         event.stopImmediatePropagation();
 
         var element = $(this);
-        var modalId = $(this).attr('data-modal-id') || 'base-modal';
+        var modalId = element.attr('data-modal-id') || 'base-modal';
         // Get the link for the modal from the data attribute.
-        var modalHref = $(this).attr('data-modal-href');
+        var modalHref = element.attr('data-modal-href');
 
         if (modalHref) {
-            modalId = "#" + modalId;
-            var throbber = modalFunctions.addProgressThrobber($(this));
+            var throbber = modalFunctions.addProgressThrobber(element);
 
             $.ajax({
                url: modalHref,
@@ -152,21 +151,14 @@ modalFunctions.openConfirmModal = function(event, options) {
 
                 $("body").append(data);
 
-                $(modalId).on('show.bs.modal', function() {
-                    // Add a new click handler on the confirm button.
-                    // When the button is pressed, a new click event for the current
-                    // element is fired.
-                    $(this).find('.modal-btn-confirm').click(function(event) {
-                        event.preventDefault();
+                var modal = $('#' + modalId);
 
-                        element.trigger('click', {'confirmButtonPressed': true});
-                    });
-                });
-                $(modalId).on('hidden.bs.modal', function() {
-                    $("body " + modalId).remove();
+                modal.data('dyg81-confirm-trigger', element);
+                modal.on('hidden.bs.modal', function() {
+                    modal.remove();
                 });
 
-                $(modalId).modal();
+                modal.modal();
             });
         }
     } else {
@@ -261,27 +253,55 @@ modalFunctions.handleOpenResponses = function(data) {
 
 /**
  * Bind the handlers to links and forms.
+ *
+ * @param baseElement
+ *   A selector string, DOM element or jQuery object to use as the delegation
+ *   root. Defaults to document so that dynamically inserted elements are also
+ *   handled. Calling this repeatedly on the same root removes the previous
+ *   bundle handlers before re-binding, preventing duplicate AJAX requests.
  */
 modalFunctions.modifyElements = function(baseElement) {
+    var $root = baseElement ? $(baseElement) : $(document);
+
+    $root.off('.dyg81Modal');
+
     // The modal-open class can be put on any clickable element.
     // The element should have the href attribute set, which should return a modal template.
-    // An optiondal data-modal-id can be set on the element if a custom modal
+    // An optional data-modal-id can be set on the element if a custom modal
     // with a custom id is used.
-    $((baseElement || '') + ".modal-open").click(modalFunctions.openModal);
+    $root.on('click.dyg81Modal', '.modal-open', modalFunctions.openModal);
 
     // The modal-open-confirm class can be put on any clickable element.
     // The element should have the data-modal-href attribute set to a url
     // which returns a modal template.
-    // An optiondal data-modal-id can be set on the element if a custom modal
+    // An optional data-modal-id can be set on the element if a custom modal
     // with a custom id is used.
-    $((baseElement || '') + ".modal-open-confirm").click(modalFunctions.openConfirmModal);
+    $root.on('click.dyg81Modal', '.modal-open-confirm', modalFunctions.openConfirmModal);
+
+    // When a confirm modal is open, pressing its confirm button should re-trigger
+    // the action of the element that originally opened the modal.
+    $root.on('click.dyg81Modal', '.modal-btn-confirm', modalFunctions.confirmModalButton);
 
     // The modal-open-from-form class can be used on a form element.
-    // If the form is successfully submited, a response of type ModalOpenResponse
-    // should be returned and a modal will open from the url specified in the response.
+    // If the form is successfully submitted, a response of type ModalOpenResponse
+    // should be returned and a modal will open from the rendered HTML in the response.
     // The response can include normal modals or form modals.
-    $((baseElement || '') + ".modal-open-from-form").submit(modalFunctions.openModalFromForm).delay(1000);
-}
+    $root.on('submit.dyg81Modal', '.modal-open-from-form', modalFunctions.openModalFromForm);
+};
+
+/**
+ * Re-trigger the original action of the element that opened the confirm modal.
+ */
+modalFunctions.confirmModalButton = function(event) {
+    event.preventDefault();
+
+    var modal = $(this).closest('.modal');
+    var trigger = modal.data('dyg81-confirm-trigger');
+
+    if (trigger && trigger.length) {
+        trigger.trigger('click', {'confirmButtonPressed': true});
+    }
+};
 
 $(document).ready(function () {
     modalFunctions.modifyElements();

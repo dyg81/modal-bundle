@@ -22,7 +22,7 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
     v2.0.3 - Add backdrop block to baseModal.html.twig
     v2.0.4 - Fix wrong code in the installation section
     v2.0.5 - Add modal size block to baseModal.html.twig
-    v3.0.0 (unreleased) - Restore classic bundle resource layout; replace the GPL loading gif with an accessible CSS-only spinner; add Symfony 3.4 Flex/4.4/5.4 support, YAML routing, the Dyg81ModalBundle translation domain and a validated modal/redirect response protocol.
+    v3.0.0 (unreleased) - Restore classic bundle resource layout; replace the GPL loading gif with an accessible CSS-only spinner; add Symfony 3.4 Flex/4.4/5.4 support, YAML routing, the Dyg81ModalBundle translation domain, a validated modal/redirect response protocol and delegated event handling via `modalFunctions.modifyElements()`.
 
 # Installation
 To install this bundle, first you need to have jQuery3 and Bootstrap4 installed.
@@ -74,6 +74,8 @@ If you want to have a loading icon when ajax requests are made, you should also 
 The ModalBundle provides two basic modal types: a content modal, which can also include forms, and a confirmation modal. You can also use this bundle to open modals after a successful form submission. We will take a look at all the different modal types and how to use them.
 
 Keep in mind that this bundle only supports one modal open at a time, because this is the default Bootstrap behaviour.
+
+Triggers are bound with delegated events, so controls added to the page after the initial page load also work. For content loaded through your own AJAX, call `modalFunctions.modifyElements(container)` where `container` is a selector string, DOM element or jQuery object. Calling it repeatedly on the same root removes the previous bundle handlers first, preventing duplicate requests.
 
 Also, when doing ajax request, after the element that was clicked a div element is added with the classes **ajax-progress** and **ajax-progress-throbber**, and a dynamic class if the clicked element has an id, **ajax-progress-ELEMENTID**. The throbber is rendered with a CSS-only animation and a screen-reader-only `<span class="sr-only">` that announces the loading state. You can change the announcement text by setting `modalFunctions.loadingText` before any modal is opened. If you do not want to use the default loading indicator, simply do not include the css file or customize it.
 

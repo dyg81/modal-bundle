@@ -102,3 +102,92 @@ describe('modal response protocol', () => {
         expect(document.body.innerHTML).toBe(before);
     });
 });
+
+describe('dynamic modal controls', () => {
+    let ajaxSpy;
+
+    function mockAjax(responseHtml) {
+        ajaxSpy = jest.spyOn($, 'ajax').mockImplementation(() => ({
+            done: function(callback) {
+                callback(responseHtml || '<div id="base-modal" class="modal"><div class="modal-body">Mock</div></div>');
+                return this;
+            },
+        }));
+    }
+
+    afterEach(() => {
+        $('.modal').remove();
+        $('.ajax-progress').remove();
+        $('#test-fixture').remove();
+        if (ajaxSpy) {
+            ajaxSpy.mockRestore();
+            ajaxSpy = null;
+        }
+    });
+
+    it('modifyElements supports selector, DOM and jQuery roots', () => {
+        const $fixture = $('<div id="test-fixture">' +
+            '<div id="root-selector"><a href="/selector" class="modal-open">Selector</a></div>' +
+            '<div id="root-dom"><a href="/dom" class="modal-open">DOM</a></div>' +
+            '<div id="root-jquery"><a href="/jquery" class="modal-open">jQuery</a></div>' +
+        '</div>').appendTo(document.body);
+
+        mockAjax();
+
+        window.modalFunctions.modifyElements('#root-selector');
+        window.modalFunctions.modifyElements(document.getElementById('root-dom'));
+        window.modalFunctions.modifyElements($('#root-jquery'));
+
+        $fixture.find('.modal-open').each(function() {
+            $(this).trigger('click');
+        });
+
+        expect(ajaxSpy).toHaveBeenCalledTimes(3);
+    });
+
+    it('does not send duplicate requests when modifyElements is called multiple times', () => {
+        $('<div id="test-fixture"><a href="/once" class="modal-open">Open</a></div>').appendTo(document.body);
+        mockAjax();
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        window.modalFunctions.modifyElements('#test-fixture');
+
+        $('#test-fixture .modal-open').trigger('click');
+
+        expect(ajaxSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('handles modal-open elements inserted after modifyElements was called', () => {
+        const $fixture = $('<div id="test-fixture"></div>').appendTo(document.body);
+        mockAjax();
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        $('<a href="/dynamic" class="modal-open">Dynamic</a>').appendTo($fixture);
+        $fixture.find('.modal-open').trigger('click');
+
+        expect(ajaxSpy).toHaveBeenCalledTimes(1);
+        expect(ajaxSpy).toHaveBeenCalledWith(expect.objectContaining({url: '/dynamic'}));
+    });
+
+    it('re-triggers the original action when a confirm modal button is pressed', () => {
+        const $fixture = $('<div id="test-fixture">' +
+            '<a href="/delete" class="modal-open-confirm" data-modal-href="/confirm">Delete</a>' +
+        '</div>').appendTo(document.body);
+        const openSpy = jest.spyOn(window, 'open').mockImplementation(() => {});
+
+        mockAjax('<div id="base-modal" class="modal">' +
+            '<div class="modal-body">Are you sure?</div>' +
+            '<button type="button" class="modal-btn-confirm">Confirm</button>' +
+        '</div>');
+
+        // Bind at document level so both the trigger and the modal markup
+        // appended to <body> are covered by delegation.
+        window.modalFunctions.modifyElements();
+        $fixture.find('.modal-open-confirm').trigger('click');
+        $('#base-modal .modal-btn-confirm').trigger('click');
+
+        expect(openSpy).toHaveBeenCalledWith('/delete', '_self');
+
+        openSpy.mockRestore();
+    });
+});
