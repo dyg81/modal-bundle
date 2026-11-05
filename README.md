@@ -22,7 +22,7 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
     v2.0.3 - Add backdrop block to baseModal.html.twig
     v2.0.4 - Fix wrong code in the installation section
     v2.0.5 - Add modal size block to baseModal.html.twig
-    v3.0.0 (unreleased) - Restore classic bundle resource layout; replace the GPL loading gif with an accessible CSS-only spinner.
+    v3.0.0 (unreleased) - Restore classic bundle resource layout; replace the GPL loading gif with an accessible CSS-only spinner; add Symfony 3.4 Flex/4.4/5.4 support, YAML routing and the Dyg81ModalBundle translation domain.
 
 # Installation
 To install this bundle, first you need to have jQuery3 and Bootstrap4 installed.
@@ -34,24 +34,23 @@ Then you need to require this bundle:
 ```
 **Important!** If you are facing problems installing the bundle in Symfony 3.4, please explicit the necesary version: **composer require "dyg81/modal-bundle:1.2.2"**
 
-After that, add the following code to the file routing.yml or annotations.yaml, depending of the symfony version you are working on, for the controller routes to work properly:
+If your application is still using the pre-Flex directory structure, migrate it to the current Symfony Flex layout first by following the official [Symfony Flex](https://symfony.com/doc/current/setup/flex.html) guide.
 
-```yml
-dyg81modalbundle:
-    resource: "@Dyg81ModalBundle/src/Controller/"
-    type:     annotation
+After that, enable the bundle and import its routes manually (no Flex recipe is provided). Create or edit `config/routes/dyg81_modal.yaml`:
+
+```yaml
+dyg81_modal:
+    resource: '@Dyg81ModalBundle/Resources/config/routing.yaml'
 ```
 
-In Symfony 3.4 Standard Edition, enable the bundle in your AppKernel file:
+In Symfony 3.4 Standard Edition, enable the bundle in your `AppKernel` file:
 
 ```php
 $bundles = [
-	...,
-	new Dyg81\ModalBundle\Dyg81ModalBundle(),
+    ...,
+    new Dyg81\ModalBundle\Dyg81ModalBundle(),
 ];
 ```
-
-**Hint:** The processes above are automatic if you use symfony flex.
 
 And install the assets using the following command:
 

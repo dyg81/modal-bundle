@@ -3,7 +3,6 @@
 namespace Dyg81\ModalBundle\Tests\Fixtures\app;
 
 use Dyg81\ModalBundle\Dyg81ModalBundle;
-use Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
@@ -16,7 +15,6 @@ class AppKernel extends Kernel
         return [
             new FrameworkBundle(),
             new TwigBundle(),
-            new SensioFrameworkExtraBundle(),
             new Dyg81ModalBundle(),
         ];
     }

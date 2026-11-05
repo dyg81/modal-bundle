@@ -5,16 +5,16 @@
       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
         <span aria-hidden="true">&times;</span>
       </button>
-      {% block modalHeader %}<p>{{ 'modal.message.confirm.title'|trans }}</p>{% endblock %}
+      {% block modalHeader %}<p>{{ 'modal.message.confirm.title'|trans({}, 'Dyg81ModalBundle') }}</p>{% endblock %}
     </div>
     <div class="modal-body">
-      {% block modalBody %}<p>{{ 'modal.message.confirm.body'|trans }}</p>{% endblock %}
+      {% block modalBody %}<p>{{ 'modal.message.confirm.body'|trans({}, 'Dyg81ModalBundle') }}</p>{% endblock %}
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ 'modal.button.close'|trans }}</button>
+      <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ 'modal.button.close'|trans({}, 'Dyg81ModalBundle') }}</button>
 
       {# If overwritting this template, the confirm button should have the class modal-btn-confirm. #}
-      <button type="button" class="btn btn-primary modal-btn-confirm" data-dismiss="modal">{{ 'modal.button.confirm'|trans }}</button>
+      <button type="button" class="btn btn-primary modal-btn-confirm" data-dismiss="modal">{{ 'modal.button.confirm'|trans({}, 'Dyg81ModalBundle') }}</button>
       {% block modalFooter %}{% endblock %}
     </div>
 {% endblock %}

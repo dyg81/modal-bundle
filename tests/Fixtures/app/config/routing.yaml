@@ -1,3 +1,2 @@
-dyg81modalbundle:
-    resource: "@Dyg81ModalBundle/src/Controller/"
-    type: annotation
+dyg81_modal:
+    resource: '@Dyg81ModalBundle/Resources/config/routing.yaml'
