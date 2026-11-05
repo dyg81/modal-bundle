@@ -7,7 +7,7 @@
         "test": "npm run test:unit && npm run test:browser",
         "test:unit": "jest",
         "test:browser": "playwright test",
-        "lint:js": "node --check public/js/scripts.js"
+        "lint:js": "node --check Resources/public/js/scripts.js"
     },
     "devDependencies": {
         "@playwright/test": "1.48.2",

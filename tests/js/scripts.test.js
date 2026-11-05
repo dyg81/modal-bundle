@@ -7,7 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const scriptsPath = path.resolve(__dirname, '../../public/js/scripts.js');
+const scriptsPath = path.resolve(__dirname, '../../Resources/public/js/scripts.js');
 
 beforeAll(() => {
     // Load the bundle source once before running tests.
