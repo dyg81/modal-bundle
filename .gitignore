@@ -1,0 +1,28 @@
+# Local planning and project guidance files
+/plan.md
+/.claude/skills/
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# Lock files (library package; keep package-lock.json and tools/quality/composer.lock)
+/composer.lock
+
+# IDE / OS
+/.idea/
+/.vscode/
+/.DS_Store
+Thumbs.db
+
+# Test and coverage artifacts
+/coverage/
+/.phpunit.result.cache
+/phpunit.xml
+
+# Tool caches
+/.php-cs-fixer.cache
+/.phpstan.cache/
+/.eslintcache
+/playwright-report/
+/test-results/
