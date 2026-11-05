@@ -5,3 +5,9 @@ parameters:
         - tests
     excludePaths:
         - tests/Fixtures/app/var
+    ignoreErrors:
+        -
+            message: '#Unsafe usage of new static#'
+            paths:
+                - src/Response/ModalOpenResponse.php
+                - src/Response/ModalRedirectResponse.php

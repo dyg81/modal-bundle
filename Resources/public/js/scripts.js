@@ -97,20 +97,21 @@ modalFunctions.bindFormModalShow = function(modalId) {
             }).done(function(data) {
                 throbber.remove();
 
-                if (data.modal) {
-                	// The form was submitted successfully and opened another modal.
-                	modal.modal('hide');
-                	throbber.remove();
-                	modalFunctions.handleOpenResponses(data);
-                } else if (data.dynamic && typeof dynamicPageFunctions !== 'undefined'
-                    && jQuery.isFunction(dynamicPageFunctions.getTemplateAjax)) {
-                	// Handle dynamic page response, if the Dynamic Page Bundle is used.
+                var isJson = typeof data === 'object' && data !== null;
+
+                if (isJson && data.modal && data.redirect) {
+                    // A response cannot both open a modal and redirect.
+                    return;
+                }
+
+                if (isJson && data.modal) {
+                    // The form was submitted successfully and opened another modal.
                     modal.modal('hide');
-                    dynamicPageFunctions.handleResponse(data.dynamic);
-                } else if (data.redirect) {
+                    modalFunctions.handleOpenResponses(data);
+                } else if (isJson && data.redirect) {
                     // The form was successfully submitted, we should redirect.
                     window.location.href = data.redirect;
-                } else {
+                } else if (typeof data === 'string') {
                     // If the form was not successfully submitted,
                     // reload the modal with the new data, which will also
                     // include any form errors.
@@ -212,16 +213,22 @@ modalFunctions.openModalFromForm = function(event, options) {
         processData: false,
         cache: false,
     }).done(function(data) {
-        if (data.modal) {
-        	throbber.remove();
-        	modalFunctions.handleOpenResponses(data);
-        } else {
-            // throbber.remove();
-            // form.trigger('submit', {'formHasErrors': true});
+        var isJson = typeof data === 'object' && data !== null;
 
-            // Reload the hole page with the new data, which should
-            // include all form errors.Considered a bad practive, will have to
-            // check if it works correctly.
+        if (isJson && data.modal && data.redirect) {
+            // A response cannot both open a modal and redirect.
+            return;
+        }
+
+        if (isJson && data.modal) {
+            throbber.remove();
+            modalFunctions.handleOpenResponses(data);
+        } else if (isJson && data.redirect) {
+            throbber.remove();
+            window.location.href = data.redirect;
+        } else if (typeof data === 'string') {
+            // Reload the whole page with the new data, which should
+            // include all form errors.
             document.open();
             document.write(data);
             document.close();
@@ -233,6 +240,10 @@ modalFunctions.openModalFromForm = function(event, options) {
  * Handle the ModalOpenResponse and DynamicOpenResponse that get returned after a form is successfully submitted.
  */
 modalFunctions.handleOpenResponses = function(data) {
+    if (typeof data !== 'object' || data === null || !data.modal || data.redirect) {
+        return;
+    }
+
 	// If the DynamicPageBundle is installed and the returned response
     // is of type DynamicOpenResponse, then let that bundle
     // update the elements of the page first.

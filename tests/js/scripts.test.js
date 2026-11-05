@@ -65,3 +65,40 @@ describe('accessible loading indicator', () => {
         expect($button.next('.ajax-progress').length).toBe(0);
     });
 });
+
+describe('modal response protocol', () => {
+    afterEach(() => {
+        $('.modal').remove();
+    });
+
+    it('handleOpenResponses appends modal HTML and opens the default modal', () => {
+        window.modalFunctions.handleOpenResponses({
+            modal: '<div id="base-modal" class="modal"><div class="modal-body">OK</div></div>',
+        });
+
+        const $modal = $('#base-modal');
+        expect($modal.length).toBe(1);
+        expect($modal.hasClass('show') || $modal.css('display') !== 'none').toBe(true);
+    });
+
+    it('handleOpenResponses uses a custom modalId', () => {
+        window.modalFunctions.handleOpenResponses({
+            modal: '<div id="custom-modal" class="modal"></div>',
+            modalId: 'custom-modal',
+        });
+
+        expect($('#custom-modal').length).toBe(1);
+        expect($('#base-modal').length).toBe(0);
+    });
+
+    it('handleOpenResponses ignores payloads with both modal and redirect', () => {
+        const before = document.body.innerHTML;
+
+        window.modalFunctions.handleOpenResponses({
+            modal: '<div id="bad-modal" class="modal"></div>',
+            redirect: '/elsewhere',
+        });
+
+        expect(document.body.innerHTML).toBe(before);
+    });
+});

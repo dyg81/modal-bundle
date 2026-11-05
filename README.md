@@ -22,7 +22,7 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
     v2.0.3 - Add backdrop block to baseModal.html.twig
     v2.0.4 - Fix wrong code in the installation section
     v2.0.5 - Add modal size block to baseModal.html.twig
-    v3.0.0 (unreleased) - Restore classic bundle resource layout; replace the GPL loading gif with an accessible CSS-only spinner; add Symfony 3.4 Flex/4.4/5.4 support, YAML routing and the Dyg81ModalBundle translation domain.
+    v3.0.0 (unreleased) - Restore classic bundle resource layout; replace the GPL loading gif with an accessible CSS-only spinner; add Symfony 3.4 Flex/4.4/5.4 support, YAML routing, the Dyg81ModalBundle translation domain and a validated modal/redirect response protocol.
 
 # Installation
 To install this bundle, first you need to have jQuery3 and Bootstrap4 installed.
@@ -239,17 +239,20 @@ return $this->createFormBuilder()
 ### Open modal after successful form submission
 Finally, with this bundle it is also possible to open a modal after a form has been successfully submitted without reloading the page. This is useful if you want to have a multi step form form example.
 
-What you have to do is put the class **modal-open-from-form** on your form. The form will then be submitted using ajax and if errors were found the page is reload, if not a modal will open. To open a modal, when the form is successfully submitted, you should return a response of type [ModalOpenResponse](Response/ModalOpenResponse.php).This takes two arguments, the first is the url from which the modal will be loaded, this should return a simple modal or a form modal. The second argument is optional and is the modal id if you want to have a modal with a custom id.
+What you have to do is put the class **modal-open-from-form** on your form. The form will then be submitted using AJAX. If validation errors are returned, the form will be replaced with the server-rendered HTML; otherwise a modal will open.
+
+To open a modal when the form is successfully submitted, return a `ModalOpenResponse` with the **rendered modal HTML**. The first argument is the HTML string, the optional second argument is the modal id.
 
 Example response:
 
 ```php
-if ($form->isValid()) {
+if ($form->isSubmitted() && $form->isValid()) {
     // Process your data...
 
-    return new ModalOpenResponse(
-        $this->generateUrl('contact_edit_modal', ['id' => $contactMessage->getId()]),
-        'your_custom_modal_id_or_null'
-    );
+    $modalHtml = $this->renderView('@App/contact/edit_modal.html.twig', [
+        'contact' => $contactMessage,
+    ]);
+
+    return new ModalOpenResponse($modalHtml, 'your_custom_modal_id_or_null');
 }
 ```
