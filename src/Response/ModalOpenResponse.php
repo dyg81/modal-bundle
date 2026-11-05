@@ -22,7 +22,7 @@ class ModalOpenResponse extends JsonResponse
     {
         parent::__construct([
             'modal' => $modal,
-            'modalId' => $modalId
+            'modalId' => $modalId,
         ]);
     }
 

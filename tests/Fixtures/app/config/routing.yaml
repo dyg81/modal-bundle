@@ -1,0 +1,3 @@
+dyg81modalbundle:
+    resource: "@Dyg81ModalBundle/src/Controller/"
+    type: annotation

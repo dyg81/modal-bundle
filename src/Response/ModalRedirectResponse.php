@@ -20,7 +20,7 @@ class ModalRedirectResponse extends JsonResponse
     public function __construct($url)
     {
         parent::__construct([
-            'redirect' => $url
+            'redirect' => $url,
         ]);
     }
 

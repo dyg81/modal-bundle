@@ -5,6 +5,7 @@
 # Dependencies
 /vendor/
 /node_modules/
+/tools/quality/vendor/
 
 # Lock files (library package; keep package-lock.json and tools/quality/composer.lock)
 /composer.lock
@@ -12,7 +13,7 @@
 # IDE / OS
 /.idea/
 /.vscode/
-/.DS_Store
+.DS_Store
 Thumbs.db
 
 # Test and coverage artifacts
@@ -20,9 +21,47 @@ Thumbs.db
 /.phpunit.result.cache
 /phpunit.xml
 
+# Symfony Flex recipe artifacts (this is a bundle, not an application)
+/.env
+/.env.dev
+/.env.test
+/symfony.lock
+/bin/
+/config/bundles.php
+/config/packages/
+/config/preload.php
+/config/routes.yaml
+/config/routes/
+/config/services.yaml
+/public/index.php
+/src/Kernel.php
+/src/Controller/.gitignore
+/templates/base.html.twig
+/tests/bootstrap.php
+
 # Tool caches
 /.php-cs-fixer.cache
 /.phpstan.cache/
 /.eslintcache
 /playwright-report/
 /test-results/
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###
+
+###> symfony/phpunit-bridge ###
+.phpunit.result.cache
+/phpunit.xml
+###< symfony/phpunit-bridge ###

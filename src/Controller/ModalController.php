@@ -12,7 +12,7 @@ class ModalController extends AbstractController
      * The link to this route should have the attributes:
      *  class: modal-open
      *
-     * @Route("/modal/open/{message}", name="dyg81_modal_open_message")
+     * @Route("/modal/open/{message}", name="dyg81_modal_open_message", methods={"GET"})
      *
      * @author Donald Yañez González <donald.yanez@gmail.com>
      *

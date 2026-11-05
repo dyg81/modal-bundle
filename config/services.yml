@@ -7,7 +7,4 @@ services:
     autoconfigure: true
     public: true
 
-  Dyg81\ModalBundle\Controller\ModalController:
-    calls:
-      - method: setContainer
-        arguments: ['@service_container']
+  Dyg81\ModalBundle\Controller\ModalController: ~
