@@ -1,0 +1,4 @@
+services:
+    Dyg81\ModalBundle\Controller\ModalController:
+        arguments: ['@twig', '@translator']
+        public: true

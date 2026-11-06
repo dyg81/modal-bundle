@@ -1,255 +1,342 @@
 # Overview
-This symfony bundle is a fork of [Rares/ModalBundle](https://packagist.org/packages/rares/modal-bundle) which is no longer maintained.
 
-This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the process of displaying content in a modal. It provides several functionalities, from displaying simple messages and confirmation modals to displaying hole forms inside a modal.
+`dyg81/modal-bundle` is a reusable Symfony bundle that renders Bootstrap 4 modals with Twig and drives their AJAX behavior with jQuery 3. It is a fork of the unmaintained [`rares/modal-bundle`](https://packagist.org/packages/rares/modal-bundle).
+
+The bundle provides ready-to-use message and confirmation modals, helpers for opening forms inside a modal, and a small JSON protocol for redirecting or chaining modals after an AJAX form submission.
 
 # Version History
 
-    v1.0.0 - First release. Support only Symfony 3.4 based on the [Symfony Standard Edition](https://github.com/symfony/symfony-standard).
+    v1.0.0 - First release. Support only Symfony 3.4 based on the Symfony Standard Edition.
     v1.0.1 - Fix a minor issue.
-    v1.0.2 - Improve symfony/framework-bundle syntaxis in the composer.json file.
+    v1.0.2 - Improve symfony/framework-bundle syntax in composer.json.
     v1.0.3 - Drop DynamicPageBundle support.
-    v1.1.0 - Change the require section in composer.json to support only Symfony 3.4 installed via [Symfony Website Skeleton](https://github.com/symfony/website-skeleton).
+    v1.1.0 - Change the require section to support only Symfony 3.4 installed via Symfony Website Skeleton.
     v1.2.0 - Merge v1.0.3 and v1.1.0 to support both installations of Symfony 3.4.
-    v1.2.1 - Add the LICENSE file and the correct translations files.
-    v1.2.2 - Remove unnecesary files and folders.
-    v1.3.0 - Change the require section to support sf4.4 and drop sf3.4 support.
-    v1.4.0 - Add the dependency injection service to support sf5.2. Any other version is unsupported from now on.
-    v1.4.1 - Delete unnecesary branch-alias section from composer.json.
-    v2.0.0 - Restructured the bundle to meet Symfony new standars. Add sf5.3 support, and sf4.4 again as well, drop sf5.2 support.
-    v2.0.1 - Fix wrong explanation in the README.md file
-    v2.0.2 - Improve bundle requeriments
-    v2.0.3 - Add backdrop block to baseModal.html.twig
-    v2.0.4 - Fix wrong code in the installation section
-    v2.0.5 - Add modal size block to baseModal.html.twig
+    v1.2.1 - Add the LICENSE file and correct translation files.
+    v1.2.2 - Remove unnecessary files and folders.
+    v1.3.0 - Change the require section to support Symfony 4.4 and drop Symfony 3.4 support.
+    v1.4.0 - Add the dependency injection service to support Symfony 5.2. Any other version is unsupported from now on.
+    v1.4.1 - Delete unnecessary branch-alias section from composer.json.
+    v2.0.0 - Restructure the bundle to meet Symfony new standards. Add Symfony 5.3 support, and Symfony 4.4 again as well; drop Symfony 5.2 support.
+    v2.0.1 - Fix wrong explanation in README.md.
+    v2.0.2 - Improve bundle requirements.
+    v2.0.3 - Add backdrop block to baseModal.html.twig.
+    v2.0.4 - Fix wrong code in the installation section.
+    v2.0.5 - Add modal size block to baseModal.html.twig.
+    v3.0.0-beta1 - Restore the classic `Resources/` bundle layout; replace the GPL loading gif with an accessible CSS-only spinner; add support for Symfony 3.4 Flex, 4.4 and 5.4; switch built-in routes to YAML; introduce the `Dyg81ModalBundle` translation domain; validate the JSON response protocol in `ModalOpenResponse` and `ModalRedirectResponse`; use delegated event handling via `modalFunctions.modifyElements()`; include the initiating submit button in AJAX form submissions; handle AJAX errors with `modal:error` events; serialize the modal lifecycle so only one modal is open at a time; and add accessible modal markup with `aria-modal`, translated labels and real heading titles.
+
+# Requirements
+
+- PHP `>=7.1.3`
+- Symfony `3.4`, `4.4` or `5.4`
+- Twig `^2.10 || ^3.0`
+- jQuery `3.x`
+- Bootstrap `4.x`
+
+Symfony 3.4, 4.4 and several PHP versions in the support matrix are end-of-life. The bundle keeps them as legacy compatibility; new projects should use supported Symfony and PHP releases.
 
 # Installation
-To install this bundle, first you need to have jQuery3 and Bootstrap4 installed.
 
-Then you need to require this bundle:
+Install the bundle with Composer:
 
-```
-  composer require "dyg81/modal-bundle"
-```
-**Important!** If you are facing problems installing the bundle in Symfony 3.4, please explicit the necesary version: **composer require "dyg81/modal-bundle:1.2.2"**
-
-After that, add the following code to the file routing.yml or annotations.yaml, depending of the symfony version you are working on, for the controller routes to work properly:
-
-```yml
-dyg81modalbundle:
-    resource: "@Dyg81ModalBundle/src/Controller/"
-    type:     annotation
+```bash
+composer require dyg81/modal-bundle
 ```
 
-In Symfony 3.4 Standard Edition, enable the bundle in your AppKernel file:
+If your application still uses the pre-Flex directory structure, migrate it to the current Symfony Flex layout first by following the official [Symfony Flex](https://symfony.com/doc/current/setup/flex.html) guide.
+
+## Enable the bundle
+
+In a Symfony 3.4 Standard Edition application, enable the bundle in `AppKernel`:
 
 ```php
 $bundles = [
-	...,
-	new Dyg81\ModalBundle\Dyg81ModalBundle(),
+    // ...
+    new Dyg81\ModalBundle\Dyg81ModalBundle(),
 ];
 ```
 
-**Hint:** The processes above are automatic if you use symfony flex.
+In Symfony 4.4/5.4 Flex applications, Flex normally registers the bundle automatically. If it does not, add it to `config/bundles.php`:
 
-And install the assets using the following command:
-
+```php
+return [
+    // ...
+    Dyg81\ModalBundle\Dyg81ModalBundle::class => ['all' => true],
+];
 ```
+
+## Import the routes
+
+No Flex recipe is provided, so import the bundle routes manually. Create or edit `config/routes/dyg81_modal.yaml`:
+
+```yaml
+dyg81_modal:
+    resource: '@Dyg81ModalBundle/Resources/config/routing.yaml'
+```
+
+## Install the assets
+
+```bash
 bin/console assets:install --symlink
 ```
 
-Finally, you need to include one javascript file in your templates where you want to use modals, I recommend including it in the base template:
+## Include the assets in your templates
 
-```twig
-<script src="{{ asset('bundles/dyg81modal/js/scripts.js') }}"></script>
-```
-
-If you want to have a loading icon when ajax requests are made, you should also add the css file included in this module:
+The host page must load jQuery 3, Bootstrap 4 and the bundle JavaScript:
 
 ```twig
 <link rel="stylesheet" href="{{ asset('bundles/dyg81modal/css/ajax-progress.css') }}">
+<script src="{{ asset('bundles/dyg81modal/js/scripts.js') }}"></script>
 ```
+
+The CSS file is optional; without it no loading spinner is shown.
 
 # Features
-The ModalBundle provides two basic modal types: a content modal, which can also include forms, and a confirmation modal. You can also use this bundle to open modals after a successful form submission. We will take a look at all the different modal types and how to use them.
 
-Keep in mind that this bundle only supports one modal open at a time, because this is the default Bootstrap behaviour.
+The bundle supports one modal open at a time, matching Bootstrap 4's default behavior.
 
-Also, when doing ajax request, after the element that was clicked a div element is added with the classes **ajax-progress** and **ajax-progress-throbber**, and a dynamic class if the clicked element has an id, **ajax-progress-ELEMENTID**. Inside this div there is also another div with the class **throbber** that renders a small gif file. If you do not want to use the default loading gif, you should not include the css file in the project or customize the css however you want.
+All triggers are bound with delegated events, so controls added to the page after the initial load also work. For content loaded through your own AJAX, call `modalFunctions.modifyElements(container)` where `container` is a selector string, DOM element or jQuery object. Calling it repeatedly on the same root removes the previous bundle handlers first, preventing duplicate requests.
 
-### Content Modal
-The content modal is the basic modal type which can be used to display pretty much any content inside a modal.
+When an AJAX request starts, a `div` with classes `ajax-progress` and `ajax-progress-throbber` is inserted after the clicked element. If the element has an `id`, an extra class `ajax-progress-ELEMENTID` is added. The spinner is CSS-only and contains a screen-reader-only `<span class="sr-only">`. Change the announcement text by setting `modalFunctions.loadingText` before any modal is opened.
 
-This bundle contains a simple controller action that displays a translatable info message given as a parameter, which can be used if simple messages need to be displayed to the user.
-The controller action looks like this:
+## Content modal
 
-```php
-    /**
-         * Helper function to display a simple translatable message in a modal.
-         * The link to this route should have the attributes:
-         *  class: modal-open
-         *
-         * @Route("/modal/open/{message}", name="dyg81_modal_open_message")
-         */
-        public function openMessageModalAction($message)
-        {
-            return $this->render('@Dyg81Modal/messageModal.html.twig', [
-                'message' => $this->get('translator')->trans($message),
-            ]);
-        }
-```
+The content modal displays any HTML inside a Bootstrap 4 modal. Add the class `modal-open` to a clickable element with an `href` pointing to a controller that returns modal markup.
 
-The messageModal.html.twig template is just a simple template that extends the base modal template baseModal.html.twig and just displays a message in the modal body. The baseModal.html.twig is a base file for a modal with multiple blocks that can be overwritten. Take a look at it [here](Resources/views/baseModal.html.twig).
-
-To open a simple message modal from a twig file we have to put the class **modal-open** on a clickable element which should have an href attribute with the path to the controller action, for example like this:
+The bundle includes a simple message modal endpoint. Use the route `dyg81_modal_open_message` with the query parameter `key` set to a translation key in the `Dyg81ModalBundle` domain:
 
 ```twig
-<button type="button" href="{{ path('dyg81_modal_open_message', {'message': 'info.message'}) }}" class="btn btn-secondary modal-open">Open Message Modal</button>
+<button type="button" class="btn btn-secondary modal-open"
+        href="{{ path('dyg81_modal_open_message', {'key': 'modal.message.info.title'}) }}">
+    Open message modal
+</button>
 ```
 
-If we want to display our own custom content in a modal, we can also do that pretty easily. We need to create a controller action which should return a template which extends the baseModal.html.twig template, or we can also create our own custom modal template. An example of a controller action is found below:
+The endpoint returns a 404 response if the key is missing, empty or unknown.
+
+For custom content, create a controller that renders a template extending `baseModal.html.twig`:
 
 ```php
-    /**
-     * Finds and displays a ContactMessage entity.
-     *
-     * @Route("/modal/{id}", name="contact_show_modal")
-     * @Method("GET")
-     */
-    public function showModalAction(ContactMessage $contactMessage)
-    {
-        $deleteForm = $this->createDeleteForm($contactMessage);
+use Symfony\Component\HttpFoundation\Response;
+use Twig\Environment;
 
-        return $this->render('contact/showModal.html.twig', array(
-            'contactMessage' => $contactMessage,
-            'delete_form' => $deleteForm->createView(),
-        ));
+class ContactModalController
+{
+    private $twig;
+
+    public function __construct(Environment $twig)
+    {
+        $this->twig = $twig;
     }
-```
 
-In a twig file we can then make an element with the same class, **modal-open** set on it and with the href attribute pointing to our controller action.
+    public function showModal(ContactMessage $contactMessage)
+    {
+        return new Response($this->twig->render('contact/showModal.html.twig', [
+            'contactMessage' => $contactMessage,
+        ]));
+    }
+}
+```
 
 ```twig
-<a href="{{ path('contact_show_modal', { 'id': contactMessage.id }) }}" class="modal-open" data-modal-id="contact-modal">Show Contact Modal</a>
+{# contact/showModal.html.twig #}
+{% extends '@Dyg81Modal/baseModal.html.twig' %}
+
+{% block modalTitle %}Contact message{% endblock %}
+
+{% block modalBody %}
+    <p>{{ contactMessage.subject }}</p>
+{% endblock %}
 ```
-
-As you can see, in the example above we also specify the attribute **data-modal-id**. This attribute will be used to open the modal with the specific id. This is useful if we have custom modal templates, or if we set a custom id in our template like we did here. The default id for the baseModal.html.twig template is **base-modal** and is recommended that all modals use that id.
-
-
-### Opening forms inside modals
-Opening a form inside a modal is pretty similar to opening a normal modal, you just have to make some adjustments to your controller action.
-
-Example of a link that opens a form:
 
 ```twig
-<a href="{{ path('contact_edit_modal', { 'id': contactMessage.id }) }}" class="modal-open">Edit Modal</a>
+<a href="{{ path('contact_show_modal', { 'id': contactMessage.id }) }}" class="modal-open" data-modal-id="contact-modal">
+    Show contact modal
+</a>
 ```
 
-In the controller action, the form action url will need to be explicitly set on the form, preferably to the same controller action. Also, when the form is successfully submitted, the redirection to a new page should be done by returning a new [ModalRedirectResponse](Response/ModalRedirectResponse.php) object, which takes an url as a parameter.
+`data-modal-id` is optional and defaults to `base-modal`. The template may override the `modalId` block to match.
 
-When submitting the form, it is submitted by an ajax call and then, if no redirection occurs, the modal is closed and opened with the new form which should contain any form errors. For this reason, there can be no modal animations on the form modal. You can find a base template for a modal form with no animations [here](Resources/views/baseFormModal.html.twig).
+## Opening forms inside modals
 
-Keep in mind that if you have multiple forms inside the modal, only the first one will be submitted using ajax. Below is an example of a controller action that returns a modal form template which extends the template mentioned above:
+Forms inside modals are submitted over AJAX. The first form in a modal receives the handler. On success return a `ModalRedirectResponse` to navigate away, or a `ModalOpenResponse` to open another modal. On failure, return the rendered form HTML; the bundle replaces the modal contents with the new markup, including validation errors.
+
+Because validation re-rendering closes and reopens the modal, form modals should not use the `fade` effect. Extend `baseFormModal.html.twig` instead of `baseModal.html.twig`.
 
 ```php
-    /**
-     * Displays a form in a modal to edit an existing ContactMessage entity.
-     *
-     * Every form displayed inside a modal should have the action url explicitly
-     * set.Also, if the form is valid, redirecting should be done by return a
-     * ModalRedirectResponse object.
-     *
-     * @Route("/modal/{id}/edit", name="contact_edit_modal")
-     * @Method({"GET", "POST"})
-     */
-    public function editModalAction(Request $request, ContactMessage $contactMessage)
+use Dyg81\ModalBundle\Response\ModalOpenResponse;
+use Dyg81\ModalBundle\Response\ModalRedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Twig\Environment;
+
+class ContactModalController
+{
+    private $twig;
+
+    public function __construct(Environment $twig)
     {
-        $deleteForm = $this->createDeleteForm($contactMessage);
+        $this->twig = $twig;
+    }
+
+    public function editModal(Request $request, ContactMessage $contactMessage)
+    {
         $editForm = $this->createForm(ContactMessageType::class, $contactMessage, [
-            // Make sure to explicitly set the action.
-            'action' => $this->generateUrl('contact_edit_modal', ['id' => $contactMessage->getId()])
+            'action' => $this->generateUrl('contact_edit_modal', ['id' => $contactMessage->getId()]),
         ]);
         $editForm->add('save', SubmitType::class, ['label' => 'Edit']);
 
         $editForm->handleRequest($request);
 
-        if ($editForm->isValid()) {
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($contactMessage);
-            $em->flush();
+        if ($editForm->isSubmitted() && $editForm->isValid()) {
+            // Persist the entity...
 
-            $this->addFlash('notice', 'Entity edited.');
-
-	    // On success, redirection should be done by returning a new ModalRedirectResponse object.
             return new ModalRedirectResponse($this->generateUrl('contact_index'));
         }
 
-        return $this->render('contact/editModal.html.twig', array(
+        return new Response($this->twig->render('contact/editModal.html.twig', [
             'contactMessage' => $contactMessage,
             'edit_form' => $editForm->createView(),
-            'delete_form' => $deleteForm->createView(),
-        ));
+        ]));
     }
+}
 ```
-
-### Confirmation Modal
-This is a special modal type which is used for confirming user input. The ModalBundle provides a default controller action for opening a basic confirmation modal:
-
-```php
-    /**
-         * Helper function to open a simple confirm modal.
-         * The link to this route should have the attributes:
-         *  class: modal-open-confirm
-         *  data-modal-href: {{ path('dyg81_modal_open_confirm') }}
-         *
-         * @Route("/modal/confirm", name="dyg81_modal_open_confirm")
-         */
-        public function openConfirmModalAction()
-        {
-            return $this->render('@Dyg81Modal/baseConfirmModal.html.twig');
-        }
-```
-
-The template file for this modal can be found [here](Resources/views/baseConfirmModal.html.twig). It displays a title and a body message, which are translatable and can be overwritten, and also has two buttons, one for closing the modal and another confirm button. The confirm button needs to have the class **modal-btn-confirm** in order for the modal to work properly. Keep this in mind if you want to make your own custom layout for this type of modal.
-
-This modal is opened in a different way that the content modal. The class that needs to be added to the element is **modal-open-confirm** and the element needs to also have the attribute **data-modal-href** set to the controller action which returns the confirmation modal template. The **data-modal-id** attribute is also supported.
-
-The class can be put also on form elements, like buttons and inputs and after confirmation the form will be submitted, or on anchor elements, where the browser will be redirected to the href link after confirmation. This is an example on how to use this modal type on a link:
 
 ```twig
-<a href="{{ path('contact_index') }}" class="modal-open-confirm" data-modal-href="{{ path('dyg81_modal_open_confirm') }}">Open Confirm Modal</a>
+{# contact/editModal.html.twig #}
+{% extends '@Dyg81Modal/baseFormModal.html.twig' %}
+
+{% block modalTitle %}Edit contact message{% endblock %}
+
+{% block modalBody %}
+    {{ form_start(edit_form) }}
+        {{ form_widget(edit_form) }}
+    {{ form_end(edit_form) }}
+{% endblock %}
 ```
 
-Or it can be used on a button inside a form:
+To open a modal after a successful form submission, render the modal HTML first and pass it to `ModalOpenResponse`:
+
+```php
+if ($form->isSubmitted() && $form->isValid()) {
+    // Process the data...
+
+    $modalHtml = $this->twig->render('@App/contact/success_modal.html.twig', [
+        'contact' => $contactMessage,
+    ]);
+
+    return new ModalOpenResponse($modalHtml, 'success-modal');
+}
+```
+
+## Confirmation modal
+
+The confirmation modal asks the user to confirm an action. Add `modal-open-confirm` and `data-modal-href` to a link or to a submit control inside a form:
+
+```twig
+<a href="{{ path('contact_index') }}" class="modal-open-confirm"
+   data-modal-href="{{ path('dyg81_modal_open_confirm') }}">
+    Open confirm modal
+</a>
+```
 
 ```php
 return $this->createFormBuilder()
-            ->add('delete', SubmitType::class, [
-                'attr' => [
-                    'class' => 'modal-open-confirm',
-                    'data-modal-href' => $this->generateUrl('dyg81_modal_open_confirm'),
-                ],
-            ])
-            ->setAction($this->generateUrl('contact_delete', array('id' => $contactMessage->getId())))
-            ->setMethod('DELETE')
-            ->getForm()
-        ;
+    ->add('delete', SubmitType::class, [
+        'attr' => [
+            'class' => 'modal-open-confirm',
+            'data-modal-href' => $this->generateUrl('dyg81_modal_open_confirm'),
+        ],
+    ])
+    ->setAction($this->generateUrl('contact_delete', ['id' => $contactMessage->getId()]))
+    ->setMethod('DELETE')
+    ->getForm();
 ```
 
-### Open modal after successful form submission
-Finally, with this bundle it is also possible to open a modal after a form has been successfully submitted without reloading the page. This is useful if you want to have a multi step form form example.
+If you override `baseConfirmModal.html.twig`, keep the class `modal-btn-confirm` on the confirm button.
 
-What you have to do is put the class **modal-open-from-form** on your form. The form will then be submitted using ajax and if errors were found the page is reload, if not a modal will open. To open a modal, when the form is successfully submitted, you should return a response of type [ModalOpenResponse](Response/ModalOpenResponse.php).This takes two arguments, the first is the url from which the modal will be loaded, this should return a simple modal or a form modal. The second argument is optional and is the modal id if you want to have a modal with a custom id.
+## Open modal after a successful page form submission
 
-Example response:
+Add the class `modal-open-from-form` to a form. The form is submitted over AJAX. The name and value of the submit button that initiated the request are included automatically, including when the user presses **Enter** in a field and the browser does not provide a submitter.
 
-```php
-if ($form->isValid()) {
-    // Process your data...
+- For `GET` forms, the data is serialized into the query string.
+- For `POST`/`multipart` forms, a `FormData` object is sent.
 
-    return new ModalOpenResponse(
-        $this->generateUrl('contact_edit_modal', ['id' => $contactMessage->getId()]),
-        'your_custom_modal_id_or_null'
-    );
-}
+If the server returns a `ModalOpenResponse`, the modal is opened. If it returns a `ModalRedirectResponse`, the browser navigates. If validation errors are returned as HTML, the originating form is replaced by the matching fragment from the response.
+
+The fragment is located by `data-modal-error-target` on the form, or by the form's own `id`:
+
+```twig
+{{ form_start(form, {'attr': {'class': 'modal-open-from-form', 'data-modal-error-target': 'contact-edit-form'}}) }}
+    {{ form_widget(form) }}
+{{ form_end(form) }}
 ```
+
+If the response does not contain that fragment, a `modal:error` event is triggered and the original form is left untouched.
+
+## AJAX errors and session expiry
+
+Every AJAX request made by the bundle is cleaned up on failure, so throbbers are always removed and controls are left usable for a retry.
+
+When a request fails, an invalid response is received or a fragment cannot be matched, the bundle triggers a `modal:error` event on `document` with a detail object that includes `reason`, `trigger`, `form` (when applicable), `jqXHR`, `textStatus` and `errorThrown`. Host applications can listen to this event to provide their own error UI. If the listener calls `event.preventDefault()`, the bundle's small built-in alert is not shown.
+
+For session expiry, the host should return one of the safe responses below. A login page returned as HTML 200 will **not** be inserted automatically; it will be treated as an unexpected response and reported through `modal:error`.
+
+- HTTP 401/403 (the bundle emits `modal:error` with `reason: 'http-error'`).
+- A JSON `ModalRedirectResponse` such as `{"redirect": "/login"}`.
+
+## Modal lifecycle events
+
+The bundle keeps at most one modal open at a time. If a new modal is requested while another is already open, the active modal is closed and removed before the new markup is inserted, even when both use the same `id`. Clicks that arrive while a request is already in flight are ignored, so rapid double-clicks never create duplicate modals or overlapping AJAX calls.
+
+Two events are fired on `document` so the host can synchronize its own UI:
+
+- `modal:opened` after `shown.bs.modal`, with `{modal, modalId, trigger}`.
+- `modal:closed` after `hidden.bs.modal` and after the element has been removed, with `{modalId, trigger}`.
+
+`modalId` is the raw id string; the bundle resolves it with `document.getElementById` and escapes it for jQuery selectors so ids containing `.`, `:` or `[` work correctly.
+
+# Public API
+
+Treat the following as public API. Changing any of them requires a major version bump.
+
+- CSS classes: `modal-open`, `modal-open-confirm`, `modal-open-from-form`, `modal-btn-confirm`, `ajax-progress`, `ajax-progress-throbber`, `ajax-progress-ELEMENTID`, `throbber`, `modal-error-message`.
+- Data attributes: `data-modal-id`, `data-modal-href`, `data-modal-error-target`.
+- Route names: `dyg81_modal_open_message`, `dyg81_modal_open_confirm`.
+- Twig block names: `modalId`, `modalEffects`, `modalBackdrop`, `modalSize`, `modalContent`, `modalTitle`, `modalHeader`, `modalBody`, `modalFooter`.
+- JSON response fields: `modal`, `modalId`, `redirect`.
+- Template namespace: `@Dyg81Modal`.
+- JavaScript global: `modalFunctions`.
+
+# Development
+
+```bash
+# Validate the package definition
+composer validate --strict
+
+# Lint PHP source files
+find src tests -name '*.php' -print0 | xargs -0 -n1 php -l
+
+# Run PHP unit tests
+vendor/bin/phpunit
+
+# Lint the JavaScript file
+node --check Resources/public/js/scripts.js
+
+# Run JavaScript unit tests
+npm run test:unit
+
+# Run browser tests (requires Playwright browsers)
+npm run test:browser
+
+# Static analysis and code style (tools in tools/quality)
+composer --working-dir=tools/quality install
+tools/quality/vendor/bin/phpstan analyse --configuration=phpstan.neon
+tools/quality/vendor/bin/php-cs-fixer fix --dry-run --diff --config=.php-cs-fixer.php
+```
+
+Linting confirms syntax and style; behavior can only be verified inside a consuming Symfony application. From that application, reinstall updated assets with `bin/console assets:install --symlink`.
+
+# License
+
+This bundle is released under the MIT license. See the [LICENSE](LICENSE) file for the full text and upstream attribution.

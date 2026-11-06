@@ -1,0 +1,39 @@
+{% set modalId = block('modalId')|trim|default('base-modal') %}
+{% set modalTitleContent = block('modalTitle')|trim %}
+{% set modalHeaderContent = block('modalHeader')|trim %}
+<div id="{{ block('modalId') }}" class="modal {{ block('modalEffects') }}" {{ block('modalBackdrop') }} role="dialog" tabindex="-1" aria-modal="true"{% if modalTitleContent %} aria-labelledby="{{ modalId }}-title"{% else %} aria-label="{{ 'modal.dialog.label'|trans({}, 'Dyg81ModalBundle') }}"{% endif %}>
+  <div class="modal-dialog {{ block('modalSize') }}">
+    <div class="modal-content">
+        {% block modalContent %}
+            {% if modalTitleContent or modalHeaderContent %}
+                <div class="modal-header">
+                    {% if modalTitleContent %}
+                        <h5 class="modal-title" id="{{ modalId }}-title">{{ modalTitleContent|raw }}</h5>
+                    {% endif %}
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{{ 'modal.button.close'|trans({}, 'Dyg81ModalBundle') }}">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    {% if modalHeaderContent %}
+                        {{ modalHeaderContent|raw }}
+                    {% endif %}
+                </div>
+            {% endif %}
+            <div class="modal-body">
+              {{ block('modalBody') }}
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ 'modal.button.close'|trans({}, 'Dyg81ModalBundle') }}</button>
+              {{ block('modalFooter') }}
+            </div>
+        {% endblock %}
+    </div>
+  </div>
+</div>
+{% block modalId %}base-modal{% endblock %}
+{% block modalEffects %}fade{% endblock %}
+{% block modalBackdrop %}{% endblock %}
+{% block modalSize %}{% endblock %}
+{% block modalTitle %}{% endblock %}
+{% block modalHeader %}{% endblock %}
+{% block modalBody %}{% endblock %}
+{% block modalFooter %}{% endblock %}

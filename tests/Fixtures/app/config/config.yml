@@ -1,0 +1,9 @@
+framework:
+    secret: test
+    test: true
+    router:
+        resource: '%kernel.project_dir%/config/routing.yaml'
+        strict_requirements: true
+
+twig:
+    strict_variables: true

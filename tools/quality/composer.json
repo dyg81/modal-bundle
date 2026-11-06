@@ -1,0 +1,13 @@
+{
+    "name": "dyg81/modal-bundle-quality-tools",
+    "type": "project",
+    "description": "Isolated quality tools for dyg81/modal-bundle",
+    "require": {
+        "php": ">=8.1",
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "phpstan/phpstan": "^1.12"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

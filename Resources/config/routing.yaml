@@ -1,0 +1,9 @@
+dyg81_modal_open_message:
+    path: /modal/open
+    controller: Dyg81\ModalBundle\Controller\ModalController::openMessageModalAction
+    methods: [GET]
+
+dyg81_modal_open_confirm:
+    path: /modal/confirm
+    controller: Dyg81\ModalBundle\Controller\ModalController::openConfirmModalAction
+    methods: [GET]

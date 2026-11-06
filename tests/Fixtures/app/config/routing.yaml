@@ -1,0 +1,2 @@
+dyg81_modal:
+    resource: '@Dyg81ModalBundle/Resources/config/routing.yaml'

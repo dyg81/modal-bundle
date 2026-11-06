@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - master
+      - 2.x
+
+jobs:
+  php:
+    name: PHP ${{ matrix.php }} / Symfony ${{ matrix.symfony }} (${{ matrix.deps }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '7.1'
+            symfony: '3.4.*'
+            deps: lowest
+          - php: '7.4'
+            symfony: '3.4.*'
+            deps: highest
+          - php: '7.1'
+            symfony: '4.4.*'
+            deps: lowest
+          - php: '8.1'
+            symfony: '4.4.*'
+            deps: highest
+          - php: '7.2'
+            symfony: '5.4.*'
+            deps: lowest
+          - php: '8.1'
+            symfony: '5.4.*'
+            deps: highest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, xml, ctype, iconv, intl
+          coverage: none
+
+      - name: Install Symfony Flex
+        run: composer global require symfony/flex --no-progress --no-interaction
+
+      - name: Install dependencies
+        run: composer update --no-interaction --no-progress --prefer-dist ${{ matrix.deps == 'lowest' && '--prefer-lowest' || '' }}
+        env:
+          SYMFONY_REQUIRE: ${{ matrix.symfony }}
+
+      - name: Lint
+        run: composer lint
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit
+
+  js:
+    name: JavaScript unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint JS
+        run: npm run lint:js
+
+      - name: Run Jest
+        run: npm run test:unit
+
+  quality:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, xml, ctype, iconv, intl
+          coverage: none
+
+      - name: Install package (no dev)
+        run: composer install --no-interaction --no-progress --no-dev
+
+      - name: Install quality tools
+        run: composer --working-dir=tools/quality install --no-interaction --no-progress
+
+      - name: PHP-CS-Fixer
+        run: tools/quality/vendor/bin/php-cs-fixer fix --dry-run --diff --config=.php-cs-fixer.php
+
+      - name: PHPStan
+        run: tools/quality/vendor/bin/phpstan analyse --configuration=phpstan.neon
