@@ -10,13 +10,21 @@
                 <source>modal.button.confirm</source>
                 <target>Confirmar</target>
             </trans-unit>
+            <trans-unit id="modal.dialog.label">
+                <source>modal.dialog.label</source>
+                <target>Diálogo modal</target>
+            </trans-unit>
+            <trans-unit id="modal.message.info.title">
+                <source>modal.message.info.title</source>
+                <target>Información</target>
+            </trans-unit>
             <trans-unit id="modal.message.confirm.title">
                 <source>modal.message.confirm.title</source>
-                <target> </target>
+                <target>Confirmar acción</target>
             </trans-unit>
             <trans-unit id="modal.message.confirm.body">
                 <source>modal.message.confirm.body</source>
-                <target>Estás seguro de realizar esta acción?</target>
+                <target>¿Estás seguro de realizar esta acción?</target>
             </trans-unit>
         </body>
     </file>

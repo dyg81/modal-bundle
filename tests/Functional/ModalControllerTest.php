@@ -19,7 +19,22 @@ class ModalControllerTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorExists('.modal');
-        $this->assertSelectorTextContains('.modal-body', 'Are you sure you want to do this action?');
+        $this->assertSelectorTextContains('.modal-body', 'Are you sure you want to perform this action?');
+    }
+
+    public function testOpenMessageModalHasAccessibleTitle()
+    {
+        $client = static::createClient();
+        $crawler = $client->request('GET', '/modal/open?key=modal.message.info.title');
+
+        $this->assertResponseIsSuccessful();
+
+        $modal = $crawler->filter('div.modal')->first();
+        $title = $crawler->filter('.modal-title')->first();
+
+        $this->assertSame('Information', trim($title->text()));
+        $this->assertSame($title->attr('id'), $modal->attr('aria-labelledby'));
+        $this->assertSame('true', $modal->attr('aria-modal'));
     }
 
     public function testOpenConfirmModalReturnsModal()
@@ -29,6 +44,21 @@ class ModalControllerTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorExists('.modal');
+    }
+
+    public function testOpenConfirmModalHasAccessibleTitle()
+    {
+        $client = static::createClient();
+        $crawler = $client->request('GET', '/modal/confirm');
+
+        $this->assertResponseIsSuccessful();
+
+        $modal = $crawler->filter('div.modal')->first();
+        $title = $crawler->filter('.modal-title')->first();
+
+        $this->assertSame('Confirm action', trim($title->text()));
+        $this->assertSame($title->attr('id'), $modal->attr('aria-labelledby'));
+        $this->assertSame('true', $modal->attr('aria-modal'));
     }
 
     public function testMessageModalRejectsPost()

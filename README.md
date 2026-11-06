@@ -22,7 +22,7 @@ This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the pro
     v2.0.3 - Add backdrop block to baseModal.html.twig
     v2.0.4 - Fix wrong code in the installation section
     v2.0.5 - Add modal size block to baseModal.html.twig
-    v3.0.0 (unreleased) - Restore classic bundle resource layout; replace the GPL loading gif with an accessible CSS-only spinner; add Symfony 3.4 Flex/4.4/5.4 support, YAML routing, the Dyg81ModalBundle translation domain, a validated modal/redirect response protocol, delegated event handling via `modalFunctions.modifyElements()`, form submissions that include the initiating submit button, centralized AJAX error handling with `modal:error` events and a serialized modal lifecycle that closes the active modal before opening a replacement.
+    v3.0.0 (unreleased) - Restore classic bundle resource layout; replace the GPL loading gif with an accessible CSS-only spinner; add Symfony 3.4 Flex/4.4/5.4 support, YAML routing, the Dyg81ModalBundle translation domain, a validated modal/redirect response protocol, delegated event handling via `modalFunctions.modifyElements()`, form submissions that include the initiating submit button, centralized AJAX error handling with `modal:error` events, a serialized modal lifecycle that closes the active modal before opening a replacement, and accessible modal markup with `aria-modal`, translated labels and real heading titles.
 
 # Installation
 To install this bundle, first you need to have jQuery3 and Bootstrap4 installed.

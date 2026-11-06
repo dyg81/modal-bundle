@@ -10,13 +10,21 @@
                 <source>modal.button.confirm</source>
                 <target>Confirm</target>
             </trans-unit>
+            <trans-unit id="modal.dialog.label">
+                <source>modal.dialog.label</source>
+                <target>Modal dialog</target>
+            </trans-unit>
+            <trans-unit id="modal.message.info.title">
+                <source>modal.message.info.title</source>
+                <target>Information</target>
+            </trans-unit>
             <trans-unit id="modal.message.confirm.title">
                 <source>modal.message.confirm.title</source>
-                <target> </target>
+                <target>Confirm action</target>
             </trans-unit>
             <trans-unit id="modal.message.confirm.body">
                 <source>modal.message.confirm.body</source>
-                <target>Are you sure you want to do this action?</target>
+                <target>Are you sure you want to perform this action?</target>
             </trans-unit>
         </body>
     </file>

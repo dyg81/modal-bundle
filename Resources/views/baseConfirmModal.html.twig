@@ -1,20 +1,10 @@
 {% extends '@Dyg81Modal/baseModal.html.twig' %}
 
-{% block modalContent %}
-    <div class="modal-header">
-      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-      {% block modalHeader %}<p>{{ 'modal.message.confirm.title'|trans({}, 'Dyg81ModalBundle') }}</p>{% endblock %}
-    </div>
-    <div class="modal-body">
-      {% block modalBody %}<p>{{ 'modal.message.confirm.body'|trans({}, 'Dyg81ModalBundle') }}</p>{% endblock %}
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ 'modal.button.close'|trans({}, 'Dyg81ModalBundle') }}</button>
+{% block modalTitle %}{{ 'modal.message.confirm.title'|trans({}, 'Dyg81ModalBundle') }}{% endblock %}
 
-      {# If overwritting this template, the confirm button should have the class modal-btn-confirm. #}
-      <button type="button" class="btn btn-primary modal-btn-confirm" data-dismiss="modal">{{ 'modal.button.confirm'|trans({}, 'Dyg81ModalBundle') }}</button>
-      {% block modalFooter %}{% endblock %}
-    </div>
+{% block modalBody %}<p>{{ 'modal.message.confirm.body'|trans({}, 'Dyg81ModalBundle') }}</p>{% endblock %}
+
+{% block modalFooter %}
+    {# If overwriting this template, the confirm button should have the class modal-btn-confirm. #}
+    <button type="button" class="btn btn-primary modal-btn-confirm" data-dismiss="modal">{{ 'modal.button.confirm'|trans({}, 'Dyg81ModalBundle') }}</button>
 {% endblock %}

@@ -1,5 +1,7 @@
 {% extends '@Dyg81Modal/baseModal.html.twig' %}
 
+{% block modalTitle %}{{ 'modal.message.info.title'|trans({}, 'Dyg81ModalBundle') }}{% endblock %}
+
 {% block modalBody %}
     {{ message }}
 {% endblock %}

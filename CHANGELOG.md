@@ -23,6 +23,8 @@ All notable changes to `dyg81/modal-bundle` are documented in this file.
 - Modal and form fragments reject full HTML documents (`<!DOCTYPE`/`<html>`) and emit `modal:error` with `reason: 'unexpected-response'`.
 - Serialized modal lifecycle: only one modal is open at a time, pending requests are ignored, active modals are closed before replacements are inserted and `modal:opened`/`modal:closed` events are emitted.
 - IDs are resolved with `document.getElementById` and escaped for jQuery so special characters are supported.
+- Improved modal accessibility: `aria-modal="true"`, `aria-labelledby` referencing a real `<h5 class="modal-title">`, translated close-button labels, and a fallback `aria-label` for modals without a title.
+- Reorganized `baseConfirmModal.html.twig` to reuse the blocks from `baseModal.html.twig` instead of duplicating the header structure.
 
 ### Removed
 - `Resources/public/images/throbber-active.gif`.
