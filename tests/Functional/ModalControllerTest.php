@@ -15,11 +15,14 @@ class ModalControllerTest extends WebTestCase
     public function testOpenMessageModalTranslatesKnownKey()
     {
         $client = static::createClient();
-        $client->request('GET', '/modal/open?key=modal.message.confirm.body');
+        $crawler = $client->request('GET', '/modal/open?key=modal.message.confirm.body');
 
-        $this->assertResponseIsSuccessful();
-        $this->assertSelectorExists('.modal');
-        $this->assertSelectorTextContains('.modal-body', 'Are you sure you want to perform this action?');
+        $this->assertSame(200, $client->getResponse()->getStatusCode());
+        $this->assertGreaterThan(0, $crawler->filter('.modal')->count());
+        $this->assertStringContainsString(
+            'Are you sure you want to perform this action?',
+            $crawler->filter('.modal-body')->first()->text()
+        );
     }
 
     public function testOpenMessageModalHasAccessibleTitle()
@@ -27,7 +30,7 @@ class ModalControllerTest extends WebTestCase
         $client = static::createClient();
         $crawler = $client->request('GET', '/modal/open?key=modal.message.info.title');
 
-        $this->assertResponseIsSuccessful();
+        $this->assertSame(200, $client->getResponse()->getStatusCode());
 
         $modal = $crawler->filter('div.modal')->first();
         $title = $crawler->filter('.modal-title')->first();
@@ -40,10 +43,10 @@ class ModalControllerTest extends WebTestCase
     public function testOpenConfirmModalReturnsModal()
     {
         $client = static::createClient();
-        $client->request('GET', '/modal/confirm');
+        $crawler = $client->request('GET', '/modal/confirm');
 
-        $this->assertResponseIsSuccessful();
-        $this->assertSelectorExists('.modal');
+        $this->assertSame(200, $client->getResponse()->getStatusCode());
+        $this->assertGreaterThan(0, $crawler->filter('.modal')->count());
     }
 
     public function testOpenConfirmModalHasAccessibleTitle()
@@ -51,7 +54,7 @@ class ModalControllerTest extends WebTestCase
         $client = static::createClient();
         $crawler = $client->request('GET', '/modal/confirm');
 
-        $this->assertResponseIsSuccessful();
+        $this->assertSame(200, $client->getResponse()->getStatusCode());
 
         $modal = $crawler->filter('div.modal')->first();
         $title = $crawler->filter('.modal-title')->first();
@@ -66,7 +69,7 @@ class ModalControllerTest extends WebTestCase
         $client = static::createClient();
         $client->request('POST', '/modal/open?key=modal.message.confirm.body');
 
-        $this->assertResponseStatusCodeSame(405);
+        $this->assertSame(405, $client->getResponse()->getStatusCode());
     }
 
     public function testMessageModalReturns404ForMissingKey()
@@ -74,7 +77,7 @@ class ModalControllerTest extends WebTestCase
         $client = static::createClient();
         $client->request('GET', '/modal/open');
 
-        $this->assertResponseStatusCodeSame(404);
+        $this->assertSame(404, $client->getResponse()->getStatusCode());
     }
 
     public function testMessageModalReturns404ForEmptyKey()
@@ -82,7 +85,7 @@ class ModalControllerTest extends WebTestCase
         $client = static::createClient();
         $client->request('GET', '/modal/open?key=');
 
-        $this->assertResponseStatusCodeSame(404);
+        $this->assertSame(404, $client->getResponse()->getStatusCode());
     }
 
     public function testMessageModalReturns404ForUnknownKey()
@@ -90,6 +93,6 @@ class ModalControllerTest extends WebTestCase
         $client = static::createClient();
         $client->request('GET', '/modal/open?key=modal.does.not.exist');
 
-        $this->assertResponseStatusCodeSame(404);
+        $this->assertSame(404, $client->getResponse()->getStatusCode());
     }
 }

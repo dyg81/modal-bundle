@@ -56,7 +56,7 @@ jobs:
 
       - name: Configure Composer for legacy Symfony matrix
         run: |
-          composer config policy.advisories.block false
+          composer config policy.advisories.block false || true
           composer config extra.symfony.require "$SYMFONY_REQUIRE"
 
       - name: Install dependencies
@@ -105,8 +105,8 @@ jobs:
           extensions: mbstring, xml, ctype, iconv, intl
           coverage: none
 
-      - name: Install package (no dev)
-        run: composer install --no-interaction --no-progress --no-dev
+      - name: Install package
+        run: composer install --no-interaction --no-progress
 
       - name: Install quality tools
         run: composer --working-dir=tools/quality install --no-interaction --no-progress
