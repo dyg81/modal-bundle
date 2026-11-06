@@ -54,6 +54,11 @@ jobs:
       - name: Install Symfony Flex
         run: composer global require symfony/flex --no-progress --no-interaction
 
+      - name: Configure Composer for legacy Symfony matrix
+        run: |
+          composer config policy.advisories.block false
+          composer config extra.symfony.require "$SYMFONY_REQUIRE"
+
       - name: Install dependencies
         run: composer update --no-interaction --no-progress --prefer-dist ${{ matrix.deps == 'lowest' && '--prefer-lowest' || '' }}
         env:
