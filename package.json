@@ -1,6 +1,6 @@
 {
     "name": "@dyg81/modal-bundle-dev",
-    "version": "3.0.0-beta1",
+    "version": "3.0.0",
     "private": true,
     "description": "Development dependencies and browser tests for dyg81/modal-bundle",
     "scripts": {
