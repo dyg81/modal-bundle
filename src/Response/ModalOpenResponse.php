@@ -75,7 +75,7 @@ class ModalOpenResponse extends JsonResponse
      *
      * @return static
      */
-    public static function fromJsonString($json, $status = 200, $headers = [])
+    public static function fromJsonString($json = null, $status = 200, $headers = [])
     {
         $data = json_decode($json, true);
 
