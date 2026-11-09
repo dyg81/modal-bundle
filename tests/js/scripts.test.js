@@ -246,7 +246,6 @@ describe('form submission with the initiating control', () => {
 
         window.modalFunctions.modifyElements('#test-fixture');
         $('#f2 button[value="publish"]').trigger('click');
-        document.getElementById('f2').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
 
         expect(ajaxOptions.data).toBeInstanceOf(FormData);
         expect(ajaxOptions.data.get('title')).toBe('Hello');
@@ -278,7 +277,6 @@ describe('form submission with the initiating control', () => {
 
         window.modalFunctions.modifyElements('#test-fixture');
         $('#f4 button[name="page"]').trigger('click');
-        document.getElementById('f4').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
 
         expect(ajaxOptions.type).toBe('GET');
         expect(ajaxOptions.url).toMatch('q=modal');

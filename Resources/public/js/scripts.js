@@ -575,7 +575,8 @@ modalFunctions.modifyElements = function(baseElement) {
     // The element should have the href attribute set, which should return a modal template.
     // An optional data-modal-id can be set on the element if a custom modal
     // with a custom id is used.
-    $root.on('click.dyg81Modal', '.modal-open', modalFunctions.openModal);
+    // The href test keeps Bootstrap's body.modal-open class out of this handler.
+    $root.on('click.dyg81Modal', '.modal-open[href]', modalFunctions.openModal);
 
     // The modal-open-confirm class can be put on any clickable element.
     // The element should have the data-modal-href attribute set to a url

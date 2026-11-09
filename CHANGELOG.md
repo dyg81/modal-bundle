@@ -29,3 +29,6 @@ All notable changes to `dyg81/modal-bundle` are documented in this file.
 ### Removed
 - `Resources/public/images/throbber-active.gif`.
 - Annotation routing from `ModalController`.
+
+### Fixed
+- Clicks inside an open modal no longer match the `.modal-open` trigger handler through Bootstrap's `<body class="modal-open">`, which previously blocked native form submission.
