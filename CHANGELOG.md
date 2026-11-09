@@ -2,7 +2,7 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
-## 3.0.0-beta1 (unreleased)
+## 3.0.0 (2026-11-08)
 
 ### Changed
 - Restored the classic Symfony bundle resource layout (`Resources/config`, `Resources/public`, `Resources/views`, `Resources/translations`).
