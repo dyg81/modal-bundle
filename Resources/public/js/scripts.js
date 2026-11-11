@@ -295,6 +295,10 @@ modalFunctions.openModalFromForm = function(event, options) {
     event.preventDefault();
     event.stopImmediatePropagation();
 
+    if (modalFunctions.pendingRequest) {
+        return;
+    }
+
     var form = this;
     var submitter = modalFunctions.getSubmitter(form, event);
     var throbberTarget = submitter.length ? submitter : $(form).find(':submit:first');
@@ -322,10 +326,6 @@ modalFunctions.openModalFromForm = function(event, options) {
         ajaxOptions.data = formData;
         ajaxOptions.contentType = false;
         ajaxOptions.processData = false;
-    }
-
-    if (modalFunctions.pendingRequest) {
-        return;
     }
 
     var sourceModal = $(form).closest('.modal');

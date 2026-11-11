@@ -2,6 +2,11 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
+## 3.1.1 (2026-11-10)
+
+### Fixed
+- Prevented an orphan loading spinner in `openModalFromForm` when another AJAX request is already pending by checking `pendingRequest` before creating the progress indicator and preparing form data.
+
 ## 3.1.0 (2026-11-10)
 
 ### Added

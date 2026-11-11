@@ -26,6 +26,7 @@ The bundle provides ready-to-use message and confirmation modals, helpers for op
     v3.0.0-beta1 - Restore the classic `Resources/` bundle layout; replace the GPL loading gif with an accessible CSS-only spinner; add support for Symfony 3.4 Flex, 4.4 and 5.4; switch built-in routes to YAML; introduce the `Dyg81ModalBundle` translation domain; validate the JSON response protocol in `ModalOpenResponse` and `ModalRedirectResponse`; use delegated event handling via `modalFunctions.modifyElements()`; include the initiating submit button in AJAX form submissions; handle AJAX errors with `modal:error` events; serialize the modal lifecycle so only one modal is open at a time; and add accessible modal markup with `aria-modal`, translated labels and real heading titles.
     v3.0.0 - Fix clicks inside an open modal being intercepted by Bootstrap's `body.modal-open` class, which blocked native form submission; add browser tests for the modal protocol.
     v3.1.0 - Add Brazilian Portuguese, French, German and Japanese translations; add tests that validate translation keys, placeholders, plural forms and date/currency format types; document Symfony's translation fallback configuration.
+    v3.1.1 - Fix an orphan loading spinner in openModalFromForm by checking for a pending AJAX request before creating the progress indicator.
 
 # Requirements
 
