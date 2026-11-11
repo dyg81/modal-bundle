@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="de" datatype="plaintext" original="file.ext">
+        <body>
+            <trans-unit id="modal.button.close">
+                <source>modal.button.close</source>
+                <target>Schließen</target>
+            </trans-unit>
+            <trans-unit id="modal.button.confirm">
+                <source>modal.button.confirm</source>
+                <target>Bestätigen</target>
+            </trans-unit>
+            <trans-unit id="modal.dialog.label">
+                <source>modal.dialog.label</source>
+                <target>Modales Dialogfenster</target>
+            </trans-unit>
+            <trans-unit id="modal.message.info.title">
+                <source>modal.message.info.title</source>
+                <target>Information</target>
+            </trans-unit>
+            <trans-unit id="modal.message.confirm.title">
+                <source>modal.message.confirm.title</source>
+                <target>Aktion bestätigen</target>
+            </trans-unit>
+            <trans-unit id="modal.message.confirm.body">
+                <source>modal.message.confirm.body</source>
+                <target>Sind Sie sicher, dass Sie diese Aktion ausführen möchten?</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

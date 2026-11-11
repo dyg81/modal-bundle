@@ -2,6 +2,16 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
+## 3.1.0 (2026-11-10)
+
+### Added
+- Brazilian Portuguese (`pt_BR`), French (`fr`), German (`de`) and Japanese (`ja`) translations.
+- Translation tests that verify every locale defines the same keys as English and preserves placeholders, plural forms and date/currency format types.
+- Documented the Symfony fallback configuration required to display the default language when a translation is missing.
+
+### Changed
+- XLIFF metadata now uses BCP 47 language tags for `source-language` and `target-language` (`pt-BR` for the `pt_BR` locale).
+
 ## 3.0.0 (2026-11-08)
 
 ### Changed

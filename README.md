@@ -25,6 +25,7 @@ The bundle provides ready-to-use message and confirmation modals, helpers for op
     v2.0.5 - Add modal size block to baseModal.html.twig.
     v3.0.0-beta1 - Restore the classic `Resources/` bundle layout; replace the GPL loading gif with an accessible CSS-only spinner; add support for Symfony 3.4 Flex, 4.4 and 5.4; switch built-in routes to YAML; introduce the `Dyg81ModalBundle` translation domain; validate the JSON response protocol in `ModalOpenResponse` and `ModalRedirectResponse`; use delegated event handling via `modalFunctions.modifyElements()`; include the initiating submit button in AJAX form submissions; handle AJAX errors with `modal:error` events; serialize the modal lifecycle so only one modal is open at a time; and add accessible modal markup with `aria-modal`, translated labels and real heading titles.
     v3.0.0 - Fix clicks inside an open modal being intercepted by Bootstrap's `body.modal-open` class, which blocked native form submission; add browser tests for the modal protocol.
+    v3.1.0 - Add Brazilian Portuguese, French, German and Japanese translations; add tests that validate translation keys, placeholders, plural forms and date/currency format types; document Symfony's translation fallback configuration.
 
 # Requirements
 
@@ -297,6 +298,35 @@ Two events are fired on `document` so the host can synchronize its own UI:
 
 `modalId` is the raw id string; the bundle resolves it with `document.getElementById` and escapes it for jQuery selectors so ids containing `.`, `:` or `[` work correctly.
 
+# Translations
+
+Built-in messages use the `Dyg81ModalBundle` translation domain and ship in these locales:
+
+| Locale | Language | File |
+| --- | --- | --- |
+| `en` | English | `Dyg81ModalBundle.en.xlf` |
+| `es` | Spanish | `Dyg81ModalBundle.es.xlf` |
+| `pt_BR` | Brazilian Portuguese | `Dyg81ModalBundle.pt_BR.xlf` |
+| `fr` | French | `Dyg81ModalBundle.fr.xlf` |
+| `de` | German | `Dyg81ModalBundle.de.xlf` |
+| `ja` | Japanese | `Dyg81ModalBundle.ja.xlf` |
+
+File names use Symfony's locale identifiers; the XLIFF `source-language` and `target-language` attributes use the corresponding BCP 47 tags (`pt-BR` for the `pt_BR` locale).
+
+## Fallback
+
+Symfony does not fall back to your default locale automatically. Configure the fallback locale so a missing translation is displayed in the default language instead of the raw key, and so the message modal does not return a 404 for an unknown key:
+
+```yaml
+# config/packages/translation.yaml
+framework:
+    default_locale: en
+    translator:
+        fallbacks: [en]
+```
+
+Set the fallback to your application's default locale. The bundle ships every message in every bundled locale, so fallback matters for locales without a bundle catalogue and for custom keys added by the host.
+
 # Public API
 
 Treat the following as public API. Changing any of them requires a major version bump.
@@ -318,8 +348,11 @@ composer validate --strict
 # Lint PHP source files
 find src tests -name '*.php' -print0 | xargs -0 -n1 php -l
 
-# Run PHP unit tests
+# Run PHP tests (includes translation file validation)
 vendor/bin/phpunit
+
+# Validate translation files
+xmllint --noout Resources/translations/Dyg81ModalBundle.*.xlf
 
 # Lint the JavaScript file
 node --check Resources/public/js/scripts.js
