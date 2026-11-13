@@ -27,6 +27,7 @@ The bundle provides ready-to-use message and confirmation modals, helpers for op
     v3.0.0 - Fix clicks inside an open modal being intercepted by Bootstrap's `body.modal-open` class, which blocked native form submission; add browser tests for the modal protocol.
     v3.1.0 - Add Brazilian Portuguese, French, German and Japanese translations; add tests that validate translation keys, placeholders, plural forms and date/currency format types; document Symfony's translation fallback configuration.
     v3.1.1 - Fix an orphan loading spinner in openModalFromForm by checking for a pending AJAX request before creating the progress indicator.
+    v3.2.0 - Fix baseModal.html.twig rendering its block definitions a second time after the modal markup, which duplicated the title, body and footer content in the page when a modal was inserted over AJAX.
 
 # Requirements
 

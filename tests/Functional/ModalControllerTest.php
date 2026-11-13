@@ -64,6 +64,17 @@ class ModalControllerTest extends WebTestCase
         $this->assertSame('true', $modal->attr('aria-modal'));
     }
 
+    public function testModalBlocksAreNotRenderedTwice()
+    {
+        $client = static::createClient();
+        $client->request('GET', '/modal/confirm');
+
+        $html = $client->getResponse()->getContent();
+
+        $this->assertSame(1, substr_count($html, 'Confirm action'));
+        $this->assertSame(1, substr_count($html, 'modal-btn-confirm'));
+    }
+
     public function testMessageModalRejectsPost()
     {
         $client = static::createClient();

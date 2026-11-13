@@ -2,6 +2,12 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
+## 3.2.0 (2026-11-12)
+
+### Fixed
+- `baseModal.html.twig` no longer repeats its block definitions after the modal markup. They were rendered a second time on every modal, leaking the child `modalTitle`, `modalBody` and `modalFooter` content as stray text after the page when the modal was inserted over AJAX.
+- Added a functional test that fails if a modal block is rendered more than once.
+
 ## 3.1.1 (2026-11-10)
 
 ### Fixed
