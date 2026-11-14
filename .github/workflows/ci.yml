@@ -115,4 +115,4 @@ jobs:
         run: tools/quality/vendor/bin/php-cs-fixer fix --dry-run --diff --config=.php-cs-fixer.php
 
       - name: PHPStan
-        run: tools/quality/vendor/bin/phpstan analyse --configuration=phpstan.neon
+        run: tools/quality/vendor/bin/phpstan analyse --configuration=phpstan.neon --memory-limit=1G
