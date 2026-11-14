@@ -71,7 +71,7 @@ If the application still uses the pre-Flex directory structure, migrate it to th
 `Resources/public/js/scripts.js` is the central integration layer. It binds delegated handlers on document ready to these public HTML contracts:
 
 - `.modal-open` fetches the element's `href`, appends the returned modal HTML to `<body>`, and opens it.
-- `.modal-open-confirm` fetches `data-modal-href`; its `.modal-btn-confirm` button re-triggers the original link or form action.
+- `.modal-open-confirm` fetches `data-modal-href`; its `.modal-btn-confirm` button re-triggers the original anchor. Non-anchor triggers open the modal but confirming them is a no-op.
 - `.modal-open-from-form` submits a page form over AJAX and handles the JSON/HTML response protocol.
 - Forms inside opened modals are also submitted over AJAX. Only the first form in a modal receives this handler.
 
@@ -102,9 +102,9 @@ The following are public API and should be treated as stable across minor versio
 
 ## Conventions
 
-- PHP: PSR-12, 4 spaces, PHP 7.1-compatible syntax.
+- PHP: PSR-12, 4 spaces, PHP 8.0-compatible syntax.
 - JavaScript: ES5-style syntax with vanilla DOM APIs and `fetch`, 4 spaces, end statements with `;`, use `addEventListener` rather than inline handlers.
-- Twig: Bootstrap 4 markup, 4 spaces.
+- Twig: Bootstrap 5 markup, 4 spaces.
 - YAML: 2 spaces.
 - Files end with a newline.
 - Update `README.md`, `UPGRADE.md`, `CHANGELOG.md` and the Version History entry when behavior changes.

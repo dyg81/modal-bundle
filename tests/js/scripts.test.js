@@ -97,6 +97,7 @@ afterEach(() => {
     });
 
     delete global.fetch;
+    window.history.replaceState(null, '', '/');
 });
 
 describe('modal bundle baseline', () => {
@@ -181,6 +182,43 @@ describe('modal response protocol', () => {
 
         expect(document.body.innerHTML).toBe(before);
     });
+
+    it('leaves the page untouched when the response lacks the requested modal id', async () => {
+        fixture('<a href="/modal" class="modal-open" data-modal-id="base-modal">Open</a>');
+        const errorHandler = jest.fn();
+        document.addEventListener('modal:error', errorHandler);
+        mockFetch(function() {
+            return Promise.resolve(htmlResponse(modalHtml('wrong-modal')));
+        });
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        click(document.querySelector('#test-fixture .modal-open'));
+        await flush();
+
+        expect(document.querySelectorAll('.modal').length).toBe(0);
+        expect(errorHandler.mock.calls[0][0].detail.reason).toBe('unexpected-response');
+
+        document.removeEventListener('modal:error', errorHandler);
+    });
+
+    it('rejects a non-string modal payload without touching the DOM', async () => {
+        fixture('<form id="bad-json" method="POST" action="/edit" class="modal-open-from-form"><button type="submit">Go</button></form>');
+        const errorHandler = jest.fn();
+        document.addEventListener('modal:error', errorHandler);
+        mockFetch(function() {
+            return Promise.resolve(jsonResponse({modal: {html: '<div></div>'}}));
+        });
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        submit(document.getElementById('bad-json'));
+        await flush();
+
+        expect(document.querySelectorAll('.modal').length).toBe(0);
+        expect(document.body.textContent).not.toContain('[object Object]');
+        expect(errorHandler.mock.calls[0][0].detail.reason).toBe('unexpected-response');
+
+        document.removeEventListener('modal:error', errorHandler);
+    });
 });
 
 describe('dynamic modal controls', () => {
@@ -236,6 +274,21 @@ describe('dynamic modal controls', () => {
 
         expect(fetchMock).toHaveBeenCalledTimes(1);
         expect(fetchMock.mock.calls[0][0]).toBe('/dynamic');
+    });
+
+    it('sends the same-origin AJAX header that jQuery used to add', async () => {
+        fixture('<a href="/modal" class="modal-open">Open</a>');
+        const fetchMock = mockFetch(function() {
+            return Promise.resolve(htmlResponse(modalHtml('base-modal')));
+        });
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        click(document.querySelector('#test-fixture .modal-open'));
+        await flush();
+
+        expect(fetchMock.mock.calls[0][1].headers).toEqual(
+            expect.objectContaining({'X-Requested-With': 'XMLHttpRequest'})
+        );
     });
 
     it('re-triggers the original action when a confirm modal button is pressed', async () => {
@@ -343,6 +396,25 @@ describe('form submission with the initiating control', () => {
         expect(fetchMock.mock.calls[0][1].method).toBe('GET');
         expect(fetchMock.mock.calls[0][0]).toContain('q=modal');
         expect(fetchMock.mock.calls[0][0]).toContain('page=2');
+    });
+
+    it('replaces the current query string for a GET form without an action', async () => {
+        window.history.replaceState(null, '', '/search?old=1');
+        const root = fixture(
+            '<form id="f5" method="get" class="modal-open-from-form">' +
+            '<input type="text" name="q" value="modal" />' +
+            '<button type="submit">Search</button>' +
+            '</form>'
+        );
+        const fetchMock = mockFetch(function() {
+            return Promise.resolve(jsonResponse({}));
+        });
+
+        window.modalFunctions.modifyElements('#test-fixture');
+        submit(root.querySelector('form'));
+        await flush();
+
+        expect(fetchMock.mock.calls[0][0]).toBe('?q=modal');
     });
 
     it('replaces the originating form with the matching validation fragment', async () => {

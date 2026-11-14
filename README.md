@@ -36,7 +36,7 @@ The bundle provides ready-to-use message and confirmation modals, helpers for op
 - Symfony `4.4` or `5.4`
 - Twig `^2.10 || ^3.0`
 - Bootstrap `5.x`
-- A modern browser with `fetch`, `AbortController`, `DOMParser` and `CustomEvent` support
+- A modern evergreen browser: the bundle uses `fetch`, `AbortController`, `DOMParser`, `CustomEvent`, `URLSearchParams`, `Promise#finally`, `Object.assign` and `addEventListener` signal options
 
 jQuery is no longer required by the bundle. The host page may keep loading it for its own code.
 
@@ -100,6 +100,8 @@ When an AJAX request starts, a `div` with classes `ajax-progress` and `ajax-prog
 ## Content modal
 
 The content modal displays any HTML inside a Bootstrap 5 modal. Add the class `modal-open` to a clickable element with an `href` pointing to a controller that returns modal markup.
+
+The response is inserted as HTML without sanitization. Only return trusted, server-rendered markup you control; `DOMParser` parses the fragment but does not make it safe.
 
 The bundle includes a simple message modal endpoint. Use the route `dyg81_modal_open_message` with the query parameter `key` set to a translation key in the `Dyg81ModalBundle` domain:
 
@@ -229,33 +231,22 @@ if ($form->isSubmitted() && $form->isValid()) {
 
 ## Confirmation modal
 
-The confirmation modal asks the user to confirm an action. Add `modal-open-confirm` and `data-modal-href` to a link or to a submit control inside a form:
+The confirmation modal asks the user to confirm an action. Add `modal-open-confirm` and `data-modal-href` to an anchor:
 
 ```twig
-<a href="{{ path('contact_index') }}" class="modal-open-confirm"
+<a href="{{ path('contact_delete', {'id': contactMessage.id}) }}" class="modal-open-confirm"
    data-modal-href="{{ path('dyg81_modal_open_confirm') }}">
-    Open confirm modal
+    Delete contact
 </a>
 ```
 
-```php
-return $this->createFormBuilder()
-    ->add('delete', SubmitType::class, [
-        'attr' => [
-            'class' => 'modal-open-confirm',
-            'data-modal-href' => $this->generateUrl('dyg81_modal_open_confirm'),
-        ],
-    ])
-    ->setAction($this->generateUrl('contact_delete', ['id' => $contactMessage->getId()]))
-    ->setMethod('DELETE')
-    ->getForm();
-```
+Only anchors are re-triggered when the confirm button is pressed. Applying `modal-open-confirm` to a submit control opens the confirmation modal, but confirming it does nothing; submit the form with the `modal-open-from-form` handler instead.
 
 If you override `baseConfirmModal.html.twig`, keep the class `modal-btn-confirm` on the confirm button.
 
 ## Open modal after a successful page form submission
 
-Add the class `modal-open-from-form` to a form. The form is submitted over AJAX. The name and value of the submit button that initiated the request are included automatically, including when the user presses **Enter** in a field and the browser does not provide a submitter.
+Add the class `modal-open-from-form` to a form. The form is submitted over AJAX. The name and value of the submitting button are included when the browser reports a submitter. The bundle also remembers the last submit button clicked in the form, so a later **Enter**-key submission includes that button's name and value.
 
 - For `GET` forms, the data is serialized into the query string.
 - For `POST`/`multipart` forms, a `FormData` object is sent.

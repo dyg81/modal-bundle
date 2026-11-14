@@ -173,13 +173,16 @@ test('replaces an active modal instead of stacking modals', async ({ page }) => 
     await initPage(page, '<a id="first" class="modal-open" href="/first">First</a>' +
         '<a id="second" class="modal-open" data-modal-id="other-modal" href="/second">Second</a>');
 
+    // Slow the fade so the second trigger lands while the first modal is still
+    // transitioning in; Bootstrap ignores hide() during that window.
+    await page.addStyleTag({content: '.modal.fade .modal-dialog { transition-duration: 1s !important; }'});
+
     await page.click('#first');
     await expect(page.locator('#base-modal')).toBeVisible();
-    await page.waitForFunction(() => document.activeElement && document.activeElement.id === 'base-modal');
 
     // The open modal covers the page, so trigger the second link directly.
     await page.evaluate(() => document.getElementById('second').click());
-    await expect(page.locator('#other-modal')).toBeVisible();
+    await expect(page.locator('#other-modal')).toBeVisible({timeout: 15000});
     await expect(page.locator('#base-modal')).toHaveCount(0);
 });
 

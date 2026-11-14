@@ -24,6 +24,12 @@ All notable changes to `dyg81/modal-bundle` are documented in this file.
 - Typed constructors on the response classes and PHP 8 return types.
 - Tests for Bootstrap 5 close markup, fetch error handling and modal lifecycle events.
 
+### Fixed
+- A modal requested while the active modal is still fading in now waits for `shown.bs.modal` before closing it, instead of leaving the old modal open.
+- Same-origin requests send `X-Requested-With: XMLHttpRequest` again.
+- Malformed JSON payloads and responses missing the expected modal id are rejected before anything is inserted into the page.
+- `GET` forms without an `action` replace the current query string again, as in 3.x.
+
 ## 3.2.0 (2026-11-12)
 
 ### Fixed

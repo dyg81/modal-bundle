@@ -72,14 +72,30 @@ function requestError(reason, message, response, cause) {
 }
 
 /**
+ * Check whether a url points at the current origin. Cross-origin requests do
+ * not get the same-origin AJAX header, which would force a CORS preflight.
+ */
+function isSameOrigin(url) {
+    var anchor = document.createElement('a');
+    anchor.href = url;
+
+    return anchor.origin === window.location.origin;
+}
+
+/**
  * Perform a request and normalize fetch's failure modes.
  *
  * The pending-request mutex is set before the request starts and cleared in
  * the finally path, together with the throbber and the remembered submitter.
  */
 modalFunctions.performRequest = function(url, init, cleanup) {
+    init = init || {};
     var record = {controller: new AbortController()};
     var options = Object.assign({signal: record.controller.signal}, init);
+
+    if (isSameOrigin(url)) {
+        options.headers = Object.assign({'X-Requested-With': 'XMLHttpRequest'}, init.headers);
+    }
 
     modalFunctions.pendingRequest = record;
 
@@ -147,7 +163,21 @@ modalFunctions.openModal = function(event) {
 };
 
 /**
+ * Check a ModalOpenResponse payload before any DOM insertion. The response is
+ * trusted markup, but its shape is still validated to avoid injecting a
+ * partial document when the server returns something else.
+ */
+function isModalPayload(data) {
+    return typeof data === 'object' && data !== null
+        && typeof data.modal === 'string' && data.modal.length > 0
+        && (data.modalId === undefined || data.modalId === null || typeof data.modalId === 'string');
+}
+
+/**
  * Open a modal from rendered HTML, optionally replacing an active modal.
+ *
+ * The markup is parsed and the expected modal is located before the active
+ * modal is closed, so an unexpected response leaves the page untouched.
  *
  * @param string      html
  *   The rendered modal markup.
@@ -159,37 +189,53 @@ modalFunctions.openModal = function(event) {
  *   An active modal that should be closed before the new one is inserted.
  */
 modalFunctions.openModalHtml = function(html, modalId, trigger, sourceModal) {
+    var id = modalId.replace(/^#/, '');
+    var parsed = new DOMParser().parseFromString(html, 'text/html');
+
+    if (!modalFunctions.isFragment(html) || !parsed.getElementById(id)) {
+        modalFunctions.emitError({reason: 'unexpected-response', trigger: trigger});
+        return;
+    }
+
     var modalToClose = sourceModal && sourceModal.nodeType
         ? sourceModal
         : (modalFunctions.activeModal && modalFunctions.activeModal.nodeType ? modalFunctions.activeModal : null);
 
-    if (modalToClose) {
+    function closeAndDisplay() {
         modalToClose.addEventListener('hidden.bs.modal', function() {
             if (modalFunctions.activeModal === modalToClose) {
                 modalFunctions.activeModal = null;
             }
             modalToClose.remove();
-            modalFunctions.displayModalHtml(html, modalId, trigger);
+            modalFunctions.displayModalHtml(parsed, id, trigger);
         }, {once: true});
 
         bootstrap.Modal.getOrCreateInstance(modalToClose).hide();
+    }
+
+    if (modalToClose) {
+        // Bootstrap ignores hide() while the modal is still fading in, so wait
+        // for it to finish before closing it.
+        if (modalToClose._dyg81Shown === false) {
+            modalToClose.addEventListener('shown.bs.modal', closeAndDisplay, {once: true});
+        } else {
+            closeAndDisplay();
+        }
     } else {
-        modalFunctions.displayModalHtml(html, modalId, trigger);
+        modalFunctions.displayModalHtml(parsed, id, trigger);
     }
 };
 
 /**
- * Insert modal markup into the page and bind its lifecycle handlers.
+ * Insert prepared modal markup into the page and bind its lifecycle handlers.
  */
-modalFunctions.displayModalHtml = function(html, modalId, trigger) {
-    var id = modalId.replace(/^#/, '');
+modalFunctions.displayModalHtml = function(parsed, id, trigger) {
     var existing = document.getElementById(id);
 
     if (existing) {
         existing.remove();
     }
 
-    var parsed = new DOMParser().parseFromString(html, 'text/html');
     while (parsed.body.firstChild) {
         document.body.appendChild(document.adoptNode(parsed.body.firstChild));
     }
@@ -201,6 +247,7 @@ modalFunctions.displayModalHtml = function(html, modalId, trigger) {
         return;
     }
 
+    modal._dyg81Shown = false;
     modalFunctions.activeModal = modal;
     modalFunctions.activeTrigger = trigger || null;
 
@@ -217,6 +264,7 @@ modalFunctions.displayModalHtml = function(html, modalId, trigger) {
     }
 
     modal.addEventListener('shown.bs.modal', function() {
+        modal._dyg81Shown = true;
         document.dispatchEvent(new CustomEvent('modal:opened', {
             detail: {
                 modal: modal,
@@ -371,6 +419,10 @@ modalFunctions.handleFormResponse = function(result, context) {
         }
 
         if (isObject && data.modal) {
+            if (!isModalPayload(data)) {
+                modalFunctions.emitError(Object.assign({reason: 'unexpected-response', response: result.response}, detail));
+                return;
+            }
             if (context.fromModal) {
                 modalFunctions.openModalHtml(data.modal, '#' + (data.modalId || 'base-modal'), context.trigger, context.sourceModal);
             } else {
@@ -380,6 +432,10 @@ modalFunctions.handleFormResponse = function(result, context) {
         }
 
         if (isObject && data.redirect) {
+            if (typeof data.redirect !== 'string') {
+                modalFunctions.emitError(Object.assign({reason: 'unexpected-response', response: result.response}, detail));
+                return;
+            }
             window.location.href = data.redirect;
             return;
         }
@@ -405,7 +461,7 @@ modalFunctions.handleFormResponse = function(result, context) {
  * submitted. Returns true when the payload is valid and a modal is opened.
  */
 modalFunctions.handleOpenResponses = function(data, sourceModal, trigger) {
-    if (typeof data !== 'object' || data === null || !data.modal || data.redirect) {
+    if (!isModalPayload(data) || data.redirect) {
         return false;
     }
 
@@ -456,7 +512,7 @@ function getFirstSubmitControl(form) {
  */
 modalFunctions.buildFormRequest = function(form, submitter) {
     var method = (form.getAttribute('method') || 'GET').toUpperCase();
-    var action = form.getAttribute('action') || window.location.href;
+    var action = form.getAttribute('action') || '';
 
     if (method === 'GET') {
         var params = new URLSearchParams();
