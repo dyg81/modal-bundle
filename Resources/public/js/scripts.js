@@ -3,26 +3,129 @@ var modalFunctions = {};
 // Loading text exposed for host applications that need a different label.
 modalFunctions.loadingText = 'Loading…';
 
+// References to the currently open modal, the trigger that opened it and any
+// in-flight request that is fetching modal markup.
+modalFunctions.activeModal = null;
+modalFunctions.activeTrigger = null;
+modalFunctions.pendingRequest = null;
+modalFunctions.bindings = [];
+
 /**
- * Add a progress throbber after the element when an ajax request is made.
+ * Add a progress throbber after the element when a request is made.
  */
 modalFunctions.addProgressThrobber = function(elem) {
-    var divClass = '';
+    var div = document.createElement('div');
+    div.className = 'ajax-progress ajax-progress-throbber' + (elem.id ? ' ajax-progress-' + elem.id : '');
+    div.setAttribute('role', 'status');
 
-    if (elem.attr('id')) {
-        divClass = ' ajax-progress-' + elem.attr('id');
-    }
+    var throbber = document.createElement('div');
+    throbber.className = 'throbber';
 
-    var div = $('<div>', {
-        'class': 'ajax-progress ajax-progress-throbber' + divClass,
-        'role': 'status'
-    });
-    var throbber = $('<div>', {'class': 'throbber'});
-    var srText = $('<span>', {'class': 'sr-only'}).text(modalFunctions.loadingText);
-    div.append(throbber).append(srText);
-    elem.after(div);
+    var srText = document.createElement('span');
+    srText.className = 'sr-only';
+    srText.textContent = modalFunctions.loadingText;
+
+    div.appendChild(throbber);
+    div.appendChild(srText);
+    elem.insertAdjacentElement('afterend', div);
 
     return div;
+};
+
+/**
+ * Read a response exactly once, based on its Content-Type. Fetch resolves for
+ * HTTP errors, so callers check response.ok before consuming the body.
+ */
+function readResponse(response) {
+    var contentType = response.headers.get('content-type') || '';
+
+    if (/application\/json|\+json/i.test(contentType)) {
+        return response.json().then(function(payload) {
+            return {kind: 'json', payload: payload, response: response};
+        }, function(error) {
+            throw requestError('parse-error', 'The server response is not valid JSON.', response, error);
+        });
+    }
+
+    if (/text\/html/i.test(contentType)) {
+        return response.text().then(function(html) {
+            if (!html.trim()) {
+                throw requestError('unexpected-response', 'The server returned an empty response.', response);
+            }
+
+            return {kind: 'html', payload: html, response: response};
+        });
+    }
+
+    throw requestError('unexpected-response', 'The server returned an unsupported content type.', response);
+}
+
+/**
+ * Build an Error that carries the modal:error reason and response.
+ */
+function requestError(reason, message, response, cause) {
+    var error = cause instanceof Error ? cause : new Error(message);
+    error.reason = reason;
+    error.response = response || null;
+
+    return error;
+}
+
+/**
+ * Check whether a url points at the current origin. Cross-origin requests do
+ * not get the same-origin AJAX header, which would force a CORS preflight.
+ */
+function isSameOrigin(url) {
+    var anchor = document.createElement('a');
+    anchor.href = url;
+
+    return anchor.origin === window.location.origin;
+}
+
+/**
+ * Perform a request and normalize fetch's failure modes.
+ *
+ * The pending-request mutex is set before the request starts and cleared in
+ * the finally path, together with the throbber and the remembered submitter.
+ */
+modalFunctions.performRequest = function(url, init, cleanup) {
+    init = init || {};
+    var record = {controller: new AbortController()};
+    var options = Object.assign({signal: record.controller.signal}, init);
+
+    if (isSameOrigin(url)) {
+        options.headers = Object.assign({'X-Requested-With': 'XMLHttpRequest'}, init.headers);
+    }
+
+    modalFunctions.pendingRequest = record;
+
+    return fetch(url, options).then(function(response) {
+        if (!response.ok) {
+            throw requestError('http-error', 'HTTP ' + response.status + ' ' + response.statusText, response);
+        }
+
+        return readResponse(response);
+    }).catch(function(error) {
+        if (error && error.reason) {
+            throw error;
+        }
+
+        if (error && error.name === 'AbortError') {
+            throw requestError('abort', 'The request was cancelled.', null, error);
+        }
+
+        throw requestError('network', 'The connection failed.', null, error);
+    }).finally(function() {
+        if (cleanup && cleanup.throbber) {
+            cleanup.throbber.remove();
+        }
+        if (cleanup && cleanup.form) {
+            delete cleanup.form._dyg81Submitter;
+        }
+        if (modalFunctions.pendingRequest === record) {
+            modalFunctions.pendingRequest = null;
+        }
+    });
 };
 
 /**
@@ -33,200 +136,190 @@ modalFunctions.openModal = function(event) {
     event.stopImmediatePropagation();
 
     // Get the link to the modal.
-    var href = $(this).attr('href');
+    var href = this.getAttribute('href');
     // Check if a custom modal id should be used.
-    var modalId = $(this).attr('data-modal-id') || 'base-modal';
+    var modalId = this.getAttribute('data-modal-id') || 'base-modal';
 
     // Make the modal request only if a url exists.
-    if (href) {
-        if (modalFunctions.pendingRequest) {
-            return;
-        }
+    if (!href || modalFunctions.pendingRequest) {
+        return;
+    }
 
-        var trigger = $(this);
-        var throbber = modalFunctions.addProgressThrobber(trigger);
-        var request = $.ajax({
-            url: href,
-        });
+    var trigger = this;
+    var throbber = modalFunctions.addProgressThrobber(trigger);
 
-        modalFunctions.pendingRequest = request;
-        modalFunctions.trackRequest(request, {
-            throbber: throbber,
-            trigger: trigger,
-            complete: function() {
-                modalFunctions.pendingRequest = null;
-            },
-        }).done(function(data) {
-            if (!modalFunctions.isFragment(data)) {
-                modalFunctions.emitError({
-                    reason: 'unexpected-response',
-                    trigger: trigger,
-                });
+    modalFunctions.performRequest(href, {method: 'GET', cache: 'no-store'}, {throbber: throbber})
+        .then(function(result) {
+            if (result.kind !== 'html' || !modalFunctions.isFragment(result.payload)) {
+                modalFunctions.emitError({reason: 'unexpected-response', trigger: trigger, response: result.response});
                 return;
             }
-            modalFunctions.openModalHtml(data, '#' + modalId, trigger);
+
+            modalFunctions.openModalHtml(result.payload, '#' + modalId, trigger);
+        })
+        .catch(function(error) {
+            modalFunctions.emitRequestError(error, {trigger: trigger});
         });
-    }
 };
 
-// References to the currently open modal, the trigger that opened it and any
-// in-flight AJAX request that is fetching modal markup.
-modalFunctions.activeModal = null;
-modalFunctions.activeTrigger = null;
-modalFunctions.pendingRequest = null;
+/**
+ * Check a ModalOpenResponse payload before any DOM insertion. The response is
+ * trusted markup, but its shape is still validated to avoid injecting a
+ * partial document when the server returns something else.
+ */
+function isModalPayload(data) {
+    return typeof data === 'object' && data !== null
+        && typeof data.modal === 'string' && data.modal.length > 0
+        && (data.modalId === undefined || data.modalId === null || typeof data.modalId === 'string');
+}
 
 /**
  * Open a modal from rendered HTML, optionally replacing an active modal.
+ *
+ * The markup is parsed and the expected modal is located before the active
+ * modal is closed, so an unexpected response leaves the page untouched.
  *
  * @param string      html
  *   The rendered modal markup.
  * @param string      modalId
  *   The selector for the modal element (e.g. "#base-modal").
- * @param jQuery|null trigger
+ * @param Element|null trigger
  *   The element that triggered the opening.
- * @param jQuery|null sourceModal
+ * @param Element|null sourceModal
  *   An active modal that should be closed before the new one is inserted.
  */
 modalFunctions.openModalHtml = function(html, modalId, trigger, sourceModal) {
-    var modalToClose = sourceModal && sourceModal.length
-        ? sourceModal
-        : (modalFunctions.activeModal && modalFunctions.activeModal.length ? modalFunctions.activeModal : null);
+    var id = modalId.replace(/^#/, '');
+    var parsed = new DOMParser().parseFromString(html, 'text/html');
 
-    if (modalToClose) {
-        modalToClose.one('hidden.bs.modal', function() {
-            if (modalFunctions.activeModal && modalFunctions.activeModal.is(modalToClose)) {
+    if (!modalFunctions.isFragment(html) || !parsed.getElementById(id)) {
+        modalFunctions.emitError({reason: 'unexpected-response', trigger: trigger});
+        return;
+    }
+
+    var modalToClose = sourceModal && sourceModal.nodeType
+        ? sourceModal
+        : (modalFunctions.activeModal && modalFunctions.activeModal.nodeType ? modalFunctions.activeModal : null);
+
+    function closeAndDisplay() {
+        modalToClose.addEventListener('hidden.bs.modal', function() {
+            if (modalFunctions.activeModal === modalToClose) {
                 modalFunctions.activeModal = null;
             }
             modalToClose.remove();
-            modalFunctions.displayModalHtml(html, modalId, trigger);
-        }).modal('hide');
+            modalFunctions.displayModalHtml(parsed, id, trigger);
+        }, {once: true});
+
+        bootstrap.Modal.getOrCreateInstance(modalToClose).hide();
+    }
+
+    if (modalToClose) {
+        // Bootstrap ignores hide() while the modal is still fading in, so wait
+        // for it to finish before closing it.
+        if (modalToClose._dyg81Shown === false) {
+            modalToClose.addEventListener('shown.bs.modal', closeAndDisplay, {once: true});
+        } else {
+            closeAndDisplay();
+        }
     } else {
-        modalFunctions.displayModalHtml(html, modalId, trigger);
+        modalFunctions.displayModalHtml(parsed, id, trigger);
     }
 };
 
 /**
- * Insert modal markup into the page and bind its lifecycle handlers.
+ * Insert prepared modal markup into the page and bind its lifecycle handlers.
  */
-modalFunctions.displayModalHtml = function(html, modalId, trigger) {
-    var id = modalId.replace(/^#/, '');
+modalFunctions.displayModalHtml = function(parsed, id, trigger) {
     var existing = document.getElementById(id);
 
     if (existing) {
-        $(existing).remove();
+        existing.remove();
     }
 
-    $("body").append(html);
+    while (parsed.body.firstChild) {
+        document.body.appendChild(document.adoptNode(parsed.body.firstChild));
+    }
 
-    var modal = $('#' + $.escapeSelector(id));
+    var modal = document.getElementById(id);
 
+    if (!modal) {
+        modalFunctions.emitError({reason: 'unexpected-response', trigger: trigger});
+        return;
+    }
+
+    modal._dyg81Shown = false;
     modalFunctions.activeModal = modal;
     modalFunctions.activeTrigger = trigger || null;
 
-    if (trigger && trigger.length) {
-        modal.data('dyg81-confirm-trigger', trigger);
+    if (trigger) {
+        modal._dyg81ConfirmTrigger = trigger;
     }
 
-    modal.one('show.bs.modal', modalFunctions.bindFormModalShow(modalId));
+    // Only the first form in a modal is submitted over AJAX.
+    var form = modal.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            modalFunctions.submitModalForm(event, form, id);
+        });
+    }
 
-    modal.one('shown.bs.modal', function() {
-        $(document).trigger('modal:opened', [{
-            modal: modal,
-            modalId: id,
-            trigger: modalFunctions.activeTrigger,
-        }]);
-    });
+    modal.addEventListener('shown.bs.modal', function() {
+        modal._dyg81Shown = true;
+        document.dispatchEvent(new CustomEvent('modal:opened', {
+            detail: {
+                modal: modal,
+                modalId: id,
+                trigger: trigger || null,
+            },
+        }));
+    }, {once: true});
 
-    modal.one('hidden.bs.modal', function() {
-        if (modalFunctions.activeModal && modalFunctions.activeModal.is(modal)) {
+    modal.addEventListener('hidden.bs.modal', function() {
+        if (modalFunctions.activeModal === modal) {
             modalFunctions.activeModal = null;
         }
         modal.remove();
-        $(document).trigger('modal:closed', [{
-            modalId: id,
-            trigger: modalFunctions.activeTrigger,
-        }]);
-    });
+        document.dispatchEvent(new CustomEvent('modal:closed', {
+            detail: {
+                modalId: id,
+                trigger: trigger || null,
+            },
+        }));
+    }, {once: true});
 
-    modal.modal();
+    bootstrap.Modal.getOrCreateInstance(modal).show();
 };
 
 /**
- * Bind the submit handler to the first form in a modal
+ * Submit the first form in an open modal over AJAX.
  */
-modalFunctions.bindFormModalShow = function(modalId) {
-    return function() {
-        var modal = $(modalId);
+modalFunctions.submitModalForm = function(event, form, modalId) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
 
-        $(this).find('form:first').submit(function(event) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
+    if (modalFunctions.pendingRequest) {
+        return;
+    }
 
-            if (modalFunctions.pendingRequest) {
-                return;
-            }
+    var submitter = modalFunctions.getSubmitter(form, event);
+    var throbberTarget = submitter || getFirstSubmitControl(form);
+    var throbber = modalFunctions.addProgressThrobber(throbberTarget);
+    var request = modalFunctions.buildFormRequest(form, submitter);
+    var sourceModal = form.closest('.modal');
 
-            var form = this;
-            var submitter = modalFunctions.getSubmitter(form, event);
-            var throbberTarget = submitter.length ? submitter : $(form).find(':submit:first');
-            var throbber = modalFunctions.addProgressThrobber(throbberTarget.length ? throbberTarget : $(form));
-
-            var formData = new FormData(form);
-            if (submitter.length && submitter.attr('name')) {
-                formData.append(submitter.attr('name'), submitter.val());
-            }
-
-            // When submitting the form, do a request and see if we get
-            // a redirect response, which should indicate that the form
-            // was successfully submitted.
-            var request = $.ajax({
-                url: $(form).attr('action'),
-                type: $(form).attr('method'),
-                data: formData,
-                contentType: false,
-                processData: false,
-                cache: false,
-            });
-
-            modalFunctions.pendingRequest = request;
-            modalFunctions.trackRequest(request, {
-                throbber: throbber,
+    modalFunctions.performRequest(request.url, request.init, {throbber: throbber, form: form})
+        .then(function(result) {
+            modalFunctions.handleFormResponse(result, {
                 form: form,
-                trigger: throbberTarget,
-                complete: function() {
-                    modalFunctions.pendingRequest = null;
-                },
-            }).done(function(data) {
-                var isJson = typeof data === 'object' && data !== null;
-                var detail = {form: form, trigger: throbberTarget};
-
-                if (isJson && data.modal && data.redirect) {
-                    // A response cannot both open a modal and redirect.
-                    modalFunctions.emitError($.extend({reason: 'unexpected-response'}, detail));
-                    return;
-                }
-
-                if (isJson && data.modal) {
-                    // The form was submitted successfully and opened another modal.
-                    modalFunctions.openModalHtml(data.modal, '#' + (data.modalId || 'base-modal'), throbberTarget, modal);
-                } else if (isJson && data.redirect) {
-                    // The form was successfully submitted, we should redirect.
-                    window.location.href = data.redirect;
-                } else if (typeof data === 'string') {
-                    // If the form was not successfully submitted,
-                    // reload the modal with the new data, which will also
-                    // include any form errors.
-                    if (!modalFunctions.isFragment(data)) {
-                        modalFunctions.emitError($.extend({reason: 'unexpected-response'}, detail));
-                        return;
-                    }
-                    modalFunctions.openModalHtml(data, modalId, throbberTarget, modal);
-                } else {
-                    modalFunctions.emitError($.extend({reason: 'unexpected-response'}, detail));
-                }
+                trigger: submitter || throbberTarget,
+                sourceModal: sourceModal,
+                modalId: modalId,
+                fromModal: true,
             });
+        })
+        .catch(function(error) {
+            modalFunctions.emitRequestError(error, {form: form, trigger: submitter || throbberTarget});
         });
-    };
 };
 
 /**
@@ -238,52 +331,37 @@ modalFunctions.openConfirmModal = function(event, options) {
     options = options || {};
 
     // Check if the click was made in the browser or by us.
-    if (!options.confirmButtonPressed) {
+    if (!options.confirmButtonPressed && !this._dyg81ConfirmPressed) {
         event.preventDefault();
         event.stopImmediatePropagation();
 
-        var element = $(this);
-        var modalId = element.attr('data-modal-id') || 'base-modal';
+        var element = this;
+        var modalId = element.getAttribute('data-modal-id') || 'base-modal';
         // Get the link for the modal from the data attribute.
-        var modalHref = element.attr('data-modal-href');
+        var modalHref = element.getAttribute('data-modal-href');
 
-        if (modalHref) {
-            if (modalFunctions.pendingRequest) {
-                return;
-            }
+        if (!modalHref || modalFunctions.pendingRequest) {
+            return;
+        }
 
-            var throbber = modalFunctions.addProgressThrobber(element);
-            var request = $.ajax({
-                url: modalHref,
-            });
+        var throbber = modalFunctions.addProgressThrobber(element);
 
-            modalFunctions.pendingRequest = request;
-            modalFunctions.trackRequest(request, {
-                throbber: throbber,
-                trigger: element,
-                complete: function() {
-                    modalFunctions.pendingRequest = null;
-                },
-            }).done(function(data) {
-                if (!modalFunctions.isFragment(data)) {
-                    modalFunctions.emitError({
-                        reason: 'unexpected-response',
-                        trigger: element,
-                    });
+        modalFunctions.performRequest(modalHref, {method: 'GET', cache: 'no-store'}, {throbber: throbber})
+            .then(function(result) {
+                if (result.kind !== 'html' || !modalFunctions.isFragment(result.payload)) {
+                    modalFunctions.emitError({reason: 'unexpected-response', trigger: element, response: result.response});
                     return;
                 }
 
-                modalFunctions.openModalHtml(data, '#' + modalId, element);
+                modalFunctions.openModalHtml(result.payload, '#' + modalId, element);
+            })
+            .catch(function(error) {
+                modalFunctions.emitRequestError(error, {trigger: element});
             });
-        }
     } else {
-        var elementType = $(this).prop('nodeName');
-
-        // If the element was a link, redirect the window to it's url.
-        // This has to be done because element.trigger('click') does not
-        // work properly for the anchor element.
-        if (elementType.toLowerCase() === 'a') {
-            window.open($(this).attr('href'), $(this).attr('target') || '_self');
+        // Only anchors are redirected; other triggers are a no-op.
+        if (this.nodeName.toLowerCase() === 'a') {
+            window.open(this.getAttribute('href'), this.getAttribute('target') || '_self');
         }
     }
 };
@@ -291,7 +369,7 @@ modalFunctions.openConfirmModal = function(event, options) {
 /**
  * Open a modal after a successful form submission.
  */
-modalFunctions.openModalFromForm = function(event, options) {
+modalFunctions.openModalFromForm = function(event) {
     event.preventDefault();
     event.stopImmediatePropagation();
 
@@ -301,75 +379,81 @@ modalFunctions.openModalFromForm = function(event, options) {
 
     var form = this;
     var submitter = modalFunctions.getSubmitter(form, event);
-    var throbberTarget = submitter.length ? submitter : $(form).find(':submit:first');
-    var throbber = modalFunctions.addProgressThrobber(throbberTarget.length ? throbberTarget : $(form));
+    var throbberTarget = submitter || getFirstSubmitControl(form);
+    var throbber = modalFunctions.addProgressThrobber(throbberTarget);
+    var request = modalFunctions.buildFormRequest(form, submitter);
+    var sourceModal = form.closest('.modal');
 
-    var action = $(form).attr('action') || '';
-    var method = ($(form).attr('method') || 'GET').toUpperCase();
-    var ajaxOptions = {
-        url: action,
-        type: method,
-        cache: false,
-    };
+    modalFunctions.performRequest(request.url, request.init, {throbber: throbber, form: form})
+        .then(function(result) {
+            modalFunctions.handleFormResponse(result, {
+                form: form,
+                trigger: submitter || throbberTarget,
+                sourceModal: sourceModal,
+                modalId: null,
+                fromModal: false,
+            });
+        })
+        .catch(function(error) {
+            modalFunctions.emitRequestError(error, {form: form, trigger: submitter || throbberTarget});
+        });
+};
 
-    if (method === 'GET') {
-        var fields = $(form).serializeArray();
-        if (submitter.length && submitter.attr('name')) {
-            fields.push({name: submitter.attr('name'), value: submitter.val()});
-        }
-        ajaxOptions.url = action + (action.indexOf('?') === -1 ? '?' : '&') + $.param(fields);
-    } else {
-        var formData = new FormData(form);
-        if (submitter.length && submitter.attr('name')) {
-            formData.append(submitter.attr('name'), submitter.val());
-        }
-        ajaxOptions.data = formData;
-        ajaxOptions.contentType = false;
-        ajaxOptions.processData = false;
-    }
+/**
+ * Apply the response protocol to a submitted form.
+ *
+ * JSON opens the next modal or redirects. HTML is treated as a validation
+ * re-render: it replaces the modal contents, or the originating page form.
+ */
+modalFunctions.handleFormResponse = function(result, context) {
+    var detail = {form: context.form, trigger: context.trigger};
 
-    var sourceModal = $(form).closest('.modal');
+    if (result.kind === 'json') {
+        var data = result.payload;
+        var isObject = data !== null && typeof data === 'object';
 
-    // When submitting the form, do a request and see if we get a
-    // ModalOpenResponse, which should indicate that the form was successfully
-    // submitted and a modal should be opened from the rendered HTML.
-    var request = $.ajax(ajaxOptions);
-
-    modalFunctions.pendingRequest = request;
-    modalFunctions.trackRequest(request, {
-        throbber: throbber,
-        form: form,
-        trigger: throbberTarget,
-        complete: function() {
-            modalFunctions.pendingRequest = null;
-        },
-    }).done(function(data) {
-        var isJson = typeof data === 'object' && data !== null;
-        var detail = {form: form, trigger: throbberTarget};
-
-        if (isJson && data.modal && data.redirect) {
+        if (isObject && data.modal && data.redirect) {
             // A response cannot both open a modal and redirect.
-            modalFunctions.emitError($.extend({reason: 'unexpected-response'}, detail));
+            modalFunctions.emitError(Object.assign({reason: 'unexpected-response', response: result.response}, detail));
             return;
         }
 
-        if (isJson && data.modal) {
-            modalFunctions.handleOpenResponses(data, sourceModal, throbberTarget);
-        } else if (isJson && data.redirect) {
-            window.location.href = data.redirect;
-        } else if (typeof data === 'string') {
-            // Validation errors were returned: replace the originating form
-            // with the matching fragment from the response instead of reloading
-            // the whole page.
-            if (!modalFunctions.isFragment(data)) {
-                modalFunctions.emitError($.extend({reason: 'unexpected-response'}, detail));
+        if (isObject && data.modal) {
+            if (!isModalPayload(data)) {
+                modalFunctions.emitError(Object.assign({reason: 'unexpected-response', response: result.response}, detail));
                 return;
             }
-            modalFunctions.replacePageForm(form, data, detail);
-        } else {
-            modalFunctions.emitError($.extend({reason: 'unexpected-response'}, detail));
+            if (context.fromModal) {
+                modalFunctions.openModalHtml(data.modal, '#' + (data.modalId || 'base-modal'), context.trigger, context.sourceModal);
+            } else {
+                modalFunctions.handleOpenResponses(data, context.sourceModal, context.trigger);
+            }
+            return;
         }
-    });
+
+        if (isObject && data.redirect) {
+            if (typeof data.redirect !== 'string') {
+                modalFunctions.emitError(Object.assign({reason: 'unexpected-response', response: result.response}, detail));
+                return;
+            }
+            window.location.href = data.redirect;
+            return;
+        }
+
+        modalFunctions.emitError(Object.assign({reason: 'unexpected-response', response: result.response}, detail));
+        return;
+    }
+
+    if (!modalFunctions.isFragment(result.payload)) {
+        modalFunctions.emitError(Object.assign({reason: 'unexpected-response', response: result.response}, detail));
+        return;
+    }
+
+    if (context.fromModal) {
+        modalFunctions.openModalHtml(result.payload, '#' + context.modalId, context.trigger, context.sourceModal);
+    } else {
+        modalFunctions.replacePageForm(context.form, result.payload, detail);
+    }
 };
 
 /**
@@ -377,38 +461,85 @@ modalFunctions.openModalFromForm = function(event, options) {
  * submitted. Returns true when the payload is valid and a modal is opened.
  */
 modalFunctions.handleOpenResponses = function(data, sourceModal, trigger) {
-    if (typeof data !== 'object' || data === null || !data.modal || data.redirect) {
+    if (!isModalPayload(data) || data.redirect) {
         return false;
     }
 
     modalFunctions.openModalHtml(data.modal, '#' + (data.modalId || 'base-modal'), trigger, sourceModal);
 
     return true;
-}
+};
 
 /**
  * Remember which submit button initiated a form submission.
  */
-modalFunctions.recordSubmitter = function() {
-    var button = $(this);
-    button.closest('form').data('dyg81-submitter', button);
+modalFunctions.recordSubmitter = function(event) {
+    var element = event.target && event.target.closest ? event.target.closest('button, input') : null;
+
+    if (!element) {
+        return;
+    }
+
+    var form = element.form || element.closest('form');
+    if (!form) {
+        return;
+    }
+
+    var type = (element.getAttribute('type') || (element.tagName === 'BUTTON' ? 'submit' : 'text')).toLowerCase();
+    if (type !== 'submit' && type !== 'image') {
+        return;
+    }
+
+    form._dyg81Submitter = element;
 };
 
 /**
  * Return the submit button that initiated the current form submission.
  */
 modalFunctions.getSubmitter = function(form, event) {
-    var submitter = null;
+    return event && event.submitter ? event.submitter : (form._dyg81Submitter || null);
+};
 
-    if (event.originalEvent && event.originalEvent.submitter) {
-        submitter = $(event.originalEvent.submitter);
+/**
+ * Return the first submit control in a form, or the form itself.
+ */
+function getFirstSubmitControl(form) {
+    return form.querySelector('button[type="submit"], input[type="submit"], button:not([type])') || form;
+}
+
+/**
+ * Build the fetch URL and options for a form submission.
+ */
+modalFunctions.buildFormRequest = function(form, submitter) {
+    var method = (form.getAttribute('method') || 'GET').toUpperCase();
+    var action = form.getAttribute('action') || '';
+
+    if (method === 'GET') {
+        var params = new URLSearchParams();
+
+        new FormData(form).forEach(function(value, name) {
+            // File inputs are not serializable into a query string.
+            if (typeof value === 'string') {
+                params.append(name, value);
+            }
+        });
+
+        if (submitter && submitter.name) {
+            params.append(submitter.name, submitter.value);
+        }
+
+        return {
+            url: action + (action.indexOf('?') === -1 ? '?' : '&') + params.toString(),
+            init: {method: 'GET', cache: 'no-store'},
+        };
     }
 
-    if (!submitter || !submitter.length) {
-        submitter = $(form).data('dyg81-submitter');
+    var formData = new FormData(form);
+    if (submitter && submitter.name) {
+        formData.append(submitter.name, submitter.value);
     }
 
-    return submitter || $();
+    return {url: action, init: {method: method, body: formData, cache: 'no-store'}};
 };
 
 /**
@@ -423,45 +554,26 @@ modalFunctions.replacePageForm = function(form, html, detail) {
     detail = detail || {form: form};
 
     if (!modalFunctions.isFragment(html)) {
-        modalFunctions.emitError($.extend({reason: 'unexpected-response'}, detail));
+        modalFunctions.emitError(Object.assign({reason: 'unexpected-response'}, detail));
         return;
     }
 
-    var $form = $(form);
-    var targetId = $form.attr('data-modal-error-target') || $form.attr('id');
+    var targetId = form.getAttribute('data-modal-error-target') || form.id;
 
     if (!targetId) {
-        modalFunctions.emitError($.extend({reason: 'missing-error-target'}, detail));
+        modalFunctions.emitError(Object.assign({reason: 'missing-error-target'}, detail));
         return;
     }
 
-    var $parsed = $('<div>').append($.parseHTML(html, document, false));
-    var $replacement = $();
+    var parsed = new DOMParser().parseFromString(html, 'text/html');
+    var replacement = parsed.getElementById(targetId);
 
-    $parsed.contents().each(function() {
-        var $node = $(this);
-
-        if ($node.attr('id') === targetId) {
-            $replacement = $node;
-            return false;
-        }
-
-        var $found = $node.find('[id]').filter(function() {
-            return $(this).attr('id') === targetId;
-        });
-
-        if ($found.length) {
-            $replacement = $found.first();
-            return false;
-        }
-    });
-
-    if (!$replacement.length) {
-        modalFunctions.emitError($.extend({reason: 'missing-error-target'}, detail));
+    if (!replacement) {
+        modalFunctions.emitError(Object.assign({reason: 'missing-error-target'}, detail));
         return;
     }
 
-    $form.replaceWith($replacement);
+    form.replaceWith(document.importNode(replacement, true));
 };
 
 /**
@@ -469,7 +581,7 @@ modalFunctions.replacePageForm = function(form, html, detail) {
  * document. Endpoints that expect fragments should reject complete HTML pages.
  */
 modalFunctions.isFragment = function(html) {
-    var trimmed = $.trim(typeof html === 'string' ? html : '');
+    var trimmed = typeof html === 'string' ? html.trim() : '';
 
     return trimmed.length > 0
         && !/^<!DOCTYPE/i.test(trimmed)
@@ -481,12 +593,40 @@ modalFunctions.isFragment = function(html) {
  * small non-intrusive message to the user.
  */
 modalFunctions.emitError = function(detail) {
-    var event = $.Event('modal:error');
-    $(document).trigger(event, [detail]);
+    var response = detail.response || null;
+    var data = {
+        reason: detail.reason || 'unexpected-response',
+        trigger: detail.trigger || null,
+        form: detail.form || null,
+        response: response,
+        error: detail.error || null,
+        status: detail.status !== undefined ? detail.status : (response ? response.status : null),
+        statusText: detail.statusText !== undefined ? detail.statusText : (response ? response.statusText : ''),
+    };
 
-    if (!event.isDefaultPrevented()) {
-        modalFunctions.showError(detail);
+    var proceed = document.dispatchEvent(new CustomEvent('modal:error', {
+        detail: data,
+        cancelable: true,
+    }));
+
+    if (proceed) {
+        modalFunctions.showError(data);
     }
+};
+
+/**
+ * Normalize a failed fetch into the modal:error detail shape.
+ */
+modalFunctions.emitRequestError = function(error, detail) {
+    var response = error && error.response ? error.response : null;
+
+    modalFunctions.emitError(Object.assign({
+        reason: error && error.reason ? error.reason : 'network',
+        response: response,
+        error: error && error.name ? error : new Error('The request failed.'),
+        status: response ? response.status : null,
+        statusText: response ? response.statusText : '',
+    }, detail));
 };
 
 /**
@@ -504,101 +644,105 @@ modalFunctions.showError = function(detail) {
     };
     var message = messages[detail.reason] || 'An unexpected error occurred. Please try again.';
 
-    var $alert = $('<div>', {
-        'class': 'modal-error-message alert alert-danger',
-        'role': 'alert',
-    }).text(message);
+    var alert = document.createElement('div');
+    alert.className = 'modal-error-message alert alert-danger';
+    alert.setAttribute('role', 'alert');
+    alert.textContent = message;
 
-    $('.modal-error-message').remove();
-    $('body').append($alert);
+    var previous = document.querySelector('.modal-error-message');
+    if (previous) {
+        previous.remove();
+    }
+
+    document.body.appendChild(alert);
 
     setTimeout(function() {
-        $alert.remove();
+        alert.remove();
     }, 5000);
 };
 
 /**
- * Attach shared failure and cleanup handlers to a jQuery AJAX request.
+ * Bind a delegated handler to a root. Roots are tracked so repeated calls
+ * replace only this bundle's listeners, never the host's handlers.
  */
-modalFunctions.trackRequest = function(jqXHR, detail) {
-    detail = detail || {};
+function bind(root, type, selector, handler, controller) {
+    root.addEventListener(type, function(event) {
+        var target = event.target && event.target.nodeType === 3 ? event.target.parentElement : event.target;
+        var match = target && target.closest ? target.closest(selector) : null;
 
-    return jqXHR.fail(function(jqXHRObj, textStatus, errorThrown) {
-        var reason = 'http-error';
-
-        if (textStatus === 'timeout') {
-            reason = 'timeout';
-        } else if (textStatus === 'abort') {
-            reason = 'abort';
-        } else if (textStatus === 'parsererror') {
-            reason = 'parse-error';
-        } else if (jqXHRObj.status === 0) {
-            reason = 'network';
-        } else if (jqXHRObj.status >= 400) {
-            reason = 'http-error';
+        if (!match || (root !== document && !root.contains(match))) {
+            return;
         }
 
-        modalFunctions.emitError($.extend({
-            reason: reason,
-            jqXHR: jqXHRObj,
-            textStatus: textStatus,
-            errorThrown: errorThrown,
-        }, detail));
-    }).always(function() {
-        if (detail.throbber) {
-            detail.throbber.remove();
-        }
-        if (detail.form) {
-            $(detail.form).removeData('dyg81-submitter');
-        }
-        if (typeof detail.complete === 'function') {
-            detail.complete();
-        }
-    });
-};
+        handler.call(match, event);
+    }, {signal: controller.signal});
+}
 
 /**
  * Bind the handlers to links and forms.
  *
  * @param baseElement
- *   A selector string, DOM element or jQuery object to use as the delegation
- *   root. Defaults to document so that dynamically inserted elements are also
- *   handled. Calling this repeatedly on the same root removes the previous
- *   bundle handlers before re-binding, preventing duplicate AJAX requests.
+ *   A selector string or DOM element to use as the delegation root. Defaults
+ *   to document so that dynamically inserted elements are also handled.
+ *   Calling this repeatedly on the same root removes the previous bundle
+ *   handlers before re-binding, preventing duplicate requests.
  */
 modalFunctions.modifyElements = function(baseElement) {
-    var $root = baseElement ? $(baseElement) : $(document);
+    var root;
 
-    $root.off('.dyg81Modal');
+    if (baseElement == null) {
+        root = document;
+    } else if (typeof baseElement === 'string') {
+        root = document.querySelector(baseElement);
+    } else if (baseElement.nodeType === 1 || baseElement.nodeType === 9) {
+        root = baseElement;
+    } else {
+        return;
+    }
+
+    if (!root) {
+        return;
+    }
+
+    modalFunctions.bindings = modalFunctions.bindings.filter(function(binding) {
+        if (binding.root === root || (binding.root !== document && !binding.root.isConnected)) {
+            binding.controller.abort();
+            return false;
+        }
+
+        return true;
+    });
+
+    var controller = new AbortController();
+    modalFunctions.bindings.push({root: root, controller: controller});
 
     // The modal-open class can be put on any clickable element.
     // The element should have the href attribute set, which should return a modal template.
     // An optional data-modal-id can be set on the element if a custom modal
     // with a custom id is used.
     // The href test keeps Bootstrap's body.modal-open class out of this handler.
-    $root.on('click.dyg81Modal', '.modal-open[href]', modalFunctions.openModal);
+    bind(root, 'click', '.modal-open[href]', modalFunctions.openModal, controller);
 
     // The modal-open-confirm class can be put on any clickable element.
     // The element should have the data-modal-href attribute set to a url
     // which returns a modal template.
     // An optional data-modal-id can be set on the element if a custom modal
     // with a custom id is used.
-    $root.on('click.dyg81Modal', '.modal-open-confirm', modalFunctions.openConfirmModal);
+    bind(root, 'click', '.modal-open-confirm', modalFunctions.openConfirmModal, controller);
 
     // When a confirm modal is open, pressing its confirm button should re-trigger
     // the action of the element that originally opened the modal.
-    $root.on('click.dyg81Modal', '.modal-btn-confirm', modalFunctions.confirmModalButton);
+    bind(root, 'click', '.modal-btn-confirm', modalFunctions.confirmModalButton, controller);
 
     // Remember the submit button used for each form so it can be included in
-    // the AJAX payload even when the browser does not provide
-    // event.originalEvent.submitter.
-    $root.on('click.dyg81Modal', 'form :submit', modalFunctions.recordSubmitter);
+    // the AJAX payload.
+    root.addEventListener('click', modalFunctions.recordSubmitter, {signal: controller.signal});
 
     // The modal-open-from-form class can be used on a form element.
     // If the form is successfully submitted, a response of type ModalOpenResponse
     // should be returned and a modal will open from the rendered HTML in the response.
     // The response can include normal modals or form modals.
-    $root.on('submit.dyg81Modal', '.modal-open-from-form', modalFunctions.openModalFromForm);
+    bind(root, 'submit', '.modal-open-from-form', modalFunctions.openModalFromForm, controller);
 };
 
 /**
@@ -607,14 +751,18 @@ modalFunctions.modifyElements = function(baseElement) {
 modalFunctions.confirmModalButton = function(event) {
     event.preventDefault();
 
-    var modal = $(this).closest('.modal');
-    var trigger = modal.data('dyg81-confirm-trigger');
+    var modal = this.closest('.modal');
+    var trigger = modal && modal._dyg81ConfirmTrigger;
 
-    if (trigger && trigger.length) {
-        trigger.trigger('click', {'confirmButtonPressed': true});
+    if (trigger) {
+        modalFunctions.openConfirmModal.call(trigger, event, {confirmButtonPressed: true});
     }
 };
 
-$(document).ready(function () {
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        modalFunctions.modifyElements();
+    });
+} else {
     modalFunctions.modifyElements();
-});
+}

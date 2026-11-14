@@ -2,6 +2,34 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
+## 4.0.0 (2026-11-14)
+
+### Changed
+- Require PHP `>=8.0` and Symfony `^4.4 || ^5.4`.
+- Migrate templates to Bootstrap 5 markup (`btn-close`, `data-bs-dismiss`).
+- Rewrite `Resources/public/js/scripts.js` with vanilla JavaScript and `fetch`; jQuery is no longer required.
+- `modal:opened`, `modal:closed` and `modal:error` are native `CustomEvent`s; listeners read the payload from `event.detail`.
+- `modalFunctions.modifyElements()` accepts a selector string or a DOM element.
+- `modalFunctions.activeModal`, `activeTrigger` and the value returned by `addProgressThrobber()` are DOM elements.
+- Failed requests report `response`, `error`, `status` and `statusText` in `modal:error` instead of `jqXHR`, `textStatus` and `errorThrown`.
+- Update the CI matrix to PHP 8.0/8.3 with Symfony 4.4/5.4.
+
+### Removed
+- jQuery dependency.
+- Bootstrap 4 support.
+- Symfony 3.4 support.
+- PHP 7.x support.
+
+### Added
+- Typed constructors on the response classes and PHP 8 return types.
+- Tests for Bootstrap 5 close markup, fetch error handling and modal lifecycle events.
+
+### Fixed
+- A modal requested while the active modal is still fading in now waits for `shown.bs.modal` before closing it, instead of leaving the old modal open.
+- Same-origin requests send `X-Requested-With: XMLHttpRequest` again.
+- Malformed JSON payloads and responses missing the expected modal id are rejected before anything is inserted into the page.
+- `GET` forms without an `action` replace the current query string again, as in 3.x.
+
 ## 3.2.0 (2026-11-12)
 
 ### Fixed

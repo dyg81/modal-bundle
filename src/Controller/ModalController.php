@@ -10,20 +10,8 @@ use Twig\Environment;
 
 class ModalController
 {
-    /**
-     * @var Environment
-     */
-    private $twig;
-
-    /**
-     * @var TranslatorBagInterface
-     */
-    private $translatorBag;
-
-    public function __construct(Environment $twig, TranslatorBagInterface $translatorBag)
+    public function __construct(private Environment $twig, private TranslatorBagInterface $translatorBag)
     {
-        $this->twig = $twig;
-        $this->translatorBag = $translatorBag;
     }
 
     /**
@@ -33,7 +21,7 @@ class ModalController
      * query parameter "key" pointing to a translation key in the
      * Dyg81ModalBundle domain.
      */
-    public function openMessageModalAction(Request $request)
+    public function openMessageModalAction(Request $request): Response
     {
         $key = $request->query->get('key');
 
@@ -61,7 +49,7 @@ class ModalController
      *  class: modal-open-confirm
      *  data-modal-href: {{ path('dyg81_modal_open_confirm') }}
      */
-    public function openConfirmModalAction()
+    public function openConfirmModalAction(): Response
     {
         return new Response($this->twig->render('@Dyg81Modal/baseConfirmModal.html.twig'));
     }

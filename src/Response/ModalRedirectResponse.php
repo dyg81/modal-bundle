@@ -17,7 +17,7 @@ class ModalRedirectResponse extends JsonResponse
      * @param array  $headers
      *   Additional HTTP headers.
      */
-    public function __construct($url, $status = 200, array $headers = [])
+    public function __construct(string $url, int $status = 200, array $headers = [])
     {
         parent::__construct([
             'redirect' => $url,
@@ -54,7 +54,7 @@ class ModalRedirectResponse extends JsonResponse
      *
      * @return static
      */
-    public static function create($data = null, $status = 200, $headers = [])
+    public static function create($data = null, $status = 200, $headers = []): static
     {
         if (!\is_array($data) || !isset($data['redirect']) || !\is_string($data['redirect'])) {
             throw new \InvalidArgumentException('ModalRedirectResponse::create() expects an array containing a "redirect" string.');
@@ -72,7 +72,7 @@ class ModalRedirectResponse extends JsonResponse
      *
      * @return static
      */
-    public static function fromJsonString($json = null, $status = 200, $headers = [])
+    public static function fromJsonString($json = null, $status = 200, $headers = []): static
     {
         $data = json_decode($json, true);
 
