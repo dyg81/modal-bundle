@@ -1,5 +1,41 @@
 # Upgrade Guide
 
+## From 3.x to 4.0.0
+
+### PHP and Symfony requirements
+
+- PHP `>=8.0` is required.
+- Only Symfony `4.4` and `5.4` are supported. Symfony `3.4` is dropped.
+
+### Bootstrap 5 and jQuery
+
+- The bundle now targets Bootstrap 5 markup and JavaScript. Host applications must load Bootstrap 5 CSS and JS.
+- jQuery is no longer required or used by the bundle. Host pages may keep loading it for their own code.
+- If you override the bundle templates, update the close button from `class="close"` with `data-dismiss="modal"` and an inner `&times;` span to `class="btn-close"` with `data-bs-dismiss="modal"` and no inner content. `baseConfirmModal.html.twig` buttons were updated the same way.
+
+### Events are native CustomEvents
+
+`modal:opened`, `modal:closed` and `modal:error` are now native `CustomEvent` instances dispatched on `document`. Listeners must read the payload from `event.detail` instead of a second jQuery argument:
+
+```js
+document.addEventListener('modal:opened', function(event) {
+    console.log(event.detail.modalId);
+});
+```
+
+`modal:error` is cancelable, so `event.preventDefault()` still suppresses the built-in fallback alert. Its detail no longer contains `jqXHR`, `textStatus` or `errorThrown`; `fetch` provides `response` (a `Response` object, or `null` for network and abort failures) and `error` (an `Error`) instead. `status` and `statusText` are also included.
+
+### JavaScript API types
+
+- `modalFunctions.modifyElements(root)` accepts a selector string or a DOM element. jQuery objects are no longer accepted.
+- `modalFunctions.activeModal` and `modalFunctions.activeTrigger` are DOM elements, not jQuery objects.
+- `modalFunctions.addProgressThrobber(element)` returns a DOM element.
+- Delegated handlers are managed with `AbortController`; host code should not depend on the former `.dyg81Modal` jQuery namespaces.
+
+### Request handling
+
+Requests now use `fetch`. A non-2xx response is reported through `modal:error` with `reason: 'http-error'` rather than being handled by jQuery's failure callback. The JSON response protocol (`modal`, `modalId`, `redirect`) is unchanged.
+
 ## From 3.1 to 3.2.0
 
 No application changes are required. `baseModal.html.twig` now defines each block once, at its place in the markup, instead of repeating the definitions after the modal element — those repeats were rendered at the end of every modal response. If you copied the template or override `@Dyg81Modal/baseModal.html.twig`, compare it with the new version and remove the trailing `{% block ... %}` definitions.

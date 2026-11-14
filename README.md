@@ -1,6 +1,6 @@
 # Overview
 
-`dyg81/modal-bundle` is a reusable Symfony bundle that renders Bootstrap 4 modals with Twig and drives their AJAX behavior with jQuery 3. It is a fork of the unmaintained [`rares/modal-bundle`](https://packagist.org/packages/rares/modal-bundle).
+`dyg81/modal-bundle` is a reusable Symfony bundle that renders Bootstrap 5 modals with Twig and drives their AJAX behavior with vanilla JavaScript. It is a fork of the unmaintained [`rares/modal-bundle`](https://packagist.org/packages/rares/modal-bundle).
 
 The bundle provides ready-to-use message and confirmation modals, helpers for opening forms inside a modal, and a small JSON protocol for redirecting or chaining modals after an AJAX form submission.
 
@@ -28,16 +28,19 @@ The bundle provides ready-to-use message and confirmation modals, helpers for op
     v3.1.0 - Add Brazilian Portuguese, French, German and Japanese translations; add tests that validate translation keys, placeholders, plural forms and date/currency format types; document Symfony's translation fallback configuration.
     v3.1.1 - Fix an orphan loading spinner in openModalFromForm by checking for a pending AJAX request before creating the progress indicator.
     v3.2.0 - Fix baseModal.html.twig rendering its block definitions a second time after the modal markup, which duplicated the title, body and footer content in the page when a modal was inserted over AJAX.
+    v4.0.0 - Migrate to Bootstrap 5 and vanilla JavaScript, require PHP 8.0+ and Symfony 4.4/5.4, and drop jQuery and Symfony 3.4.
 
 # Requirements
 
-- PHP `>=7.1.3`
-- Symfony `3.4`, `4.4` or `5.4`
+- PHP `>=8.0`
+- Symfony `4.4` or `5.4`
 - Twig `^2.10 || ^3.0`
-- jQuery `3.x`
-- Bootstrap `4.x`
+- Bootstrap `5.x`
+- A modern browser with `fetch`, `AbortController`, `DOMParser` and `CustomEvent` support
 
-Symfony 3.4, 4.4 and several PHP versions in the support matrix are end-of-life. The bundle keeps them as legacy compatibility; new projects should use supported Symfony and PHP releases.
+jQuery is no longer required by the bundle. The host page may keep loading it for its own code.
+
+CI tests these PHP/Symfony combinations: PHP 8.0 with Symfony 4.4 (lowest and highest dependencies), PHP 8.0 with Symfony 5.4 (lowest dependencies) and PHP 8.3 with Symfony 5.4 (highest dependencies). Other combinations are not tested.
 
 # Installation
 
@@ -50,15 +53,6 @@ composer require dyg81/modal-bundle
 If your application still uses the pre-Flex directory structure, migrate it to the current Symfony Flex layout first by following the official [Symfony Flex](https://symfony.com/doc/current/setup/flex.html) guide.
 
 ## Enable the bundle
-
-In a Symfony 3.4 Standard Edition application, enable the bundle in `AppKernel`:
-
-```php
-$bundles = [
-    // ...
-    new Dyg81\ModalBundle\Dyg81ModalBundle(),
-];
-```
 
 In Symfony 4.4/5.4 Flex applications, Flex normally registers the bundle automatically. If it does not, add it to `config/bundles.php`:
 
@@ -86,26 +80,26 @@ bin/console assets:install --symlink
 
 ## Include the assets in your templates
 
-The host page must load jQuery 3, Bootstrap 4 and the bundle JavaScript:
+The host page must load Bootstrap 5 CSS and JavaScript (the bundle JavaScript does not use jQuery):
 
 ```twig
 <link rel="stylesheet" href="{{ asset('bundles/dyg81modal/css/ajax-progress.css') }}">
 <script src="{{ asset('bundles/dyg81modal/js/scripts.js') }}"></script>
 ```
 
-The CSS file is optional; without it no loading spinner is shown.
+The CSS file is optional; without it no loading spinner is shown. Bootstrap 5 must be loaded before the bundle JavaScript.
 
 # Features
 
-The bundle supports one modal open at a time, matching Bootstrap 4's default behavior.
+The bundle supports one modal open at a time, matching Bootstrap 5's default behavior.
 
-All triggers are bound with delegated events, so controls added to the page after the initial load also work. For content loaded through your own AJAX, call `modalFunctions.modifyElements(container)` where `container` is a selector string, DOM element or jQuery object. Calling it repeatedly on the same root removes the previous bundle handlers first, preventing duplicate requests.
+All triggers are bound with delegated events, so controls added to the page after the initial load also work. For content loaded through your own AJAX, call `modalFunctions.modifyElements(container)` where `container` is a selector string or a DOM element. Calling it repeatedly on the same root removes the previous bundle handlers first, preventing duplicate requests.
 
 When an AJAX request starts, a `div` with classes `ajax-progress` and `ajax-progress-throbber` is inserted after the clicked element. If the element has an `id`, an extra class `ajax-progress-ELEMENTID` is added. The spinner is CSS-only and contains a screen-reader-only `<span class="sr-only">`. Change the announcement text by setting `modalFunctions.loadingText` before any modal is opened.
 
 ## Content modal
 
-The content modal displays any HTML inside a Bootstrap 4 modal. Add the class `modal-open` to a clickable element with an `href` pointing to a controller that returns modal markup.
+The content modal displays any HTML inside a Bootstrap 5 modal. Add the class `modal-open` to a clickable element with an `href` pointing to a controller that returns modal markup.
 
 The bundle includes a simple message modal endpoint. Use the route `dyg81_modal_open_message` with the query parameter `key` set to a translation key in the `Dyg81ModalBundle` domain:
 
@@ -282,7 +276,7 @@ If the response does not contain that fragment, a `modal:error` event is trigger
 
 Every AJAX request made by the bundle is cleaned up on failure, so throbbers are always removed and controls are left usable for a retry.
 
-When a request fails, an invalid response is received or a fragment cannot be matched, the bundle triggers a `modal:error` event on `document` with a detail object that includes `reason`, `trigger`, `form` (when applicable), `jqXHR`, `textStatus` and `errorThrown`. Host applications can listen to this event to provide their own error UI. If the listener calls `event.preventDefault()`, the bundle's small built-in alert is not shown.
+When a request fails, an invalid response is received or a fragment cannot be matched, the bundle dispatches a cancelable `modal:error` `CustomEvent` on `document`. `event.detail` contains `reason`, `trigger`, `form` (when applicable), `response`, `error`, `status` and `statusText`. Host applications can listen to this event to provide their own error UI. If the listener calls `event.preventDefault()`, the bundle's small built-in alert is not shown.
 
 For session expiry, the host should return one of the safe responses below. A login page returned as HTML 200 will **not** be inserted automatically; it will be treated as an unexpected response and reported through `modal:error`.
 
@@ -293,12 +287,18 @@ For session expiry, the host should return one of the safe responses below. A lo
 
 The bundle keeps at most one modal open at a time. If a new modal is requested while another is already open, the active modal is closed and removed before the new markup is inserted, even when both use the same `id`. Clicks that arrive while a request is already in flight are ignored, so rapid double-clicks never create duplicate modals or overlapping AJAX calls.
 
-Two events are fired on `document` so the host can synchronize its own UI:
+Two native `CustomEvent`s are dispatched on `document` so the host can synchronize its own UI. Read the payload from `event.detail`:
+
+```js
+document.addEventListener('modal:opened', function(event) {
+    console.log(event.detail.modalId);
+});
+```
 
 - `modal:opened` after `shown.bs.modal`, with `{modal, modalId, trigger}`.
 - `modal:closed` after `hidden.bs.modal` and after the element has been removed, with `{modalId, trigger}`.
 
-`modalId` is the raw id string; the bundle resolves it with `document.getElementById` and escapes it for jQuery selectors so ids containing `.`, `:` or `[` work correctly.
+`modalId` is the raw id string; the bundle resolves it with `document.getElementById`, so ids containing `.`, `:` or `[` work correctly.
 
 # Translations
 
