@@ -81,3 +81,99 @@ All notable changes to `dyg81/modal-bundle` are documented in this file.
 
 ### Fixed
 - Clicks inside an open modal no longer match the `.modal-open` trigger handler through Bootstrap's `<body class="modal-open">`, which previously blocked native form submission.
+
+## 2.0.5 
+
+### Added 
+- Modal size block to baseModal.html.twig.
+
+## 2.0.4 
+
+### Fixed 
+- Wrong code in the installation section.
+
+## 2.0.3 
+
+### Added 
+- Backdrop block to baseModal.html.twig.
+
+## 2.0.2 
+
+### Changed
+- Improve bundle requirements.
+
+## 2.0.1 
+
+### Fixed 
+- Wrong explanation in README.md.
+
+## 2.0.0 
+
+### Added
+- Symfony 5.3 support.
+
+### Removed
+- Symfony 5.2 support.
+
+### Changed
+- Restructure the bundle to meet Symfony new standards. 
+
+
+## 1.4.1 
+
+### Changed
+- Delete unnecessary branch-alias section from composer.json.
+
+## 1.4.0 
+
+### Added 
+- Dependency injection service to support Symfony 5.2.
+
+## 1.3.0 
+
+### Added 
+- Symfony 4.4 support.
+
+## 1.2.2 
+
+### Removed 
+- Unnecessary files and folders.
+
+## 1.2.1 
+
+### Added 
+- LICENSE file. 
+
+### Fix
+- Correct translation files format.
+
+## 1.2.0
+
+### Changed
+- Merge v1.0.3 and v1.1.0 to support both installations of Symfony 3.4.
+
+## 1.1.0 
+
+### Changed 
+- Require section to support Symfony 3.4 installed via Symfony Website Skeleton.
+
+## 1.0.3 
+
+### Removed 
+- DynamicPageBundle support.
+
+## 1.0.2 
+
+### Changed
+- Improve symfony/framework-bundle syntax in composer.json.
+
+## 1.0.1 
+
+### Fix 
+- Minor issues.
+
+## 1.0.0 
+
+### Changed
+- First release. 
+- Support only Symfony 3.4 based on the Symfony Standard Edition.

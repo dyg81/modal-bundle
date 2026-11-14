@@ -4,32 +4,6 @@
 
 The bundle provides ready-to-use message and confirmation modals, helpers for opening forms inside a modal, and a small JSON protocol for redirecting or chaining modals after an AJAX form submission.
 
-# Version History
-
-    v1.0.0 - First release. Support only Symfony 3.4 based on the Symfony Standard Edition.
-    v1.0.1 - Fix a minor issue.
-    v1.0.2 - Improve symfony/framework-bundle syntax in composer.json.
-    v1.0.3 - Drop DynamicPageBundle support.
-    v1.1.0 - Change the require section to support only Symfony 3.4 installed via Symfony Website Skeleton.
-    v1.2.0 - Merge v1.0.3 and v1.1.0 to support both installations of Symfony 3.4.
-    v1.2.1 - Add the LICENSE file and correct translation files.
-    v1.2.2 - Remove unnecessary files and folders.
-    v1.3.0 - Change the require section to support Symfony 4.4 and drop Symfony 3.4 support.
-    v1.4.0 - Add the dependency injection service to support Symfony 5.2. Any other version is unsupported from now on.
-    v1.4.1 - Delete unnecessary branch-alias section from composer.json.
-    v2.0.0 - Restructure the bundle to meet Symfony new standards. Add Symfony 5.3 support, and Symfony 4.4 again as well; drop Symfony 5.2 support.
-    v2.0.1 - Fix wrong explanation in README.md.
-    v2.0.2 - Improve bundle requirements.
-    v2.0.3 - Add backdrop block to baseModal.html.twig.
-    v2.0.4 - Fix wrong code in the installation section.
-    v2.0.5 - Add modal size block to baseModal.html.twig.
-    v3.0.0-beta1 - Restore the classic `Resources/` bundle layout; replace the GPL loading gif with an accessible CSS-only spinner; add support for Symfony 3.4 Flex, 4.4 and 5.4; switch built-in routes to YAML; introduce the `Dyg81ModalBundle` translation domain; validate the JSON response protocol in `ModalOpenResponse` and `ModalRedirectResponse`; use delegated event handling via `modalFunctions.modifyElements()`; include the initiating submit button in AJAX form submissions; handle AJAX errors with `modal:error` events; serialize the modal lifecycle so only one modal is open at a time; and add accessible modal markup with `aria-modal`, translated labels and real heading titles.
-    v3.0.0 - Fix clicks inside an open modal being intercepted by Bootstrap's `body.modal-open` class, which blocked native form submission; add browser tests for the modal protocol.
-    v3.1.0 - Add Brazilian Portuguese, French, German and Japanese translations; add tests that validate translation keys, placeholders, plural forms and date/currency format types; document Symfony's translation fallback configuration.
-    v3.1.1 - Fix an orphan loading spinner in openModalFromForm by checking for a pending AJAX request before creating the progress indicator.
-    v3.2.0 - Fix baseModal.html.twig rendering its block definitions a second time after the modal markup, which duplicated the title, body and footer content in the page when a modal was inserted over AJAX.
-    v4.0.0 - Migrate to Bootstrap 5 and vanilla JavaScript, require PHP 8.0+ and Symfony 4.4/5.4, and drop jQuery and Symfony 3.4.
-
 # Requirements
 
 - PHP `>=8.0`
