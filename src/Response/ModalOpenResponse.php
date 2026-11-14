@@ -18,7 +18,7 @@ class ModalOpenResponse extends JsonResponse
      * @param array       $headers
      *   Additional HTTP headers.
      */
-    public function __construct($modal, $modalId = null, $status = 200, array $headers = [])
+    public function __construct(string $modal, ?string $modalId = null, int $status = 200, array $headers = [])
     {
         parent::__construct([
             'modal' => $modal,
@@ -57,7 +57,7 @@ class ModalOpenResponse extends JsonResponse
      *
      * @return static
      */
-    public static function create($data = null, $status = 200, $headers = [])
+    public static function create($data = null, $status = 200, $headers = []): static
     {
         if (!\is_array($data) || !isset($data['modal']) || !\is_string($data['modal'])) {
             throw new \InvalidArgumentException('ModalOpenResponse::create() expects an array containing a "modal" string.');
@@ -75,7 +75,7 @@ class ModalOpenResponse extends JsonResponse
      *
      * @return static
      */
-    public static function fromJsonString($json = null, $status = 200, $headers = [])
+    public static function fromJsonString($json = null, $status = 200, $headers = []): static
     {
         $data = json_decode($json, true);
 
