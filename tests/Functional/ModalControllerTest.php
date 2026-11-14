@@ -75,6 +75,17 @@ class ModalControllerTest extends WebTestCase
         $this->assertSame(1, substr_count($html, 'modal-btn-confirm'));
     }
 
+    public function testModalUsesBootstrap5CloseButtons()
+    {
+        $client = static::createClient();
+        $client->request('GET', '/modal/confirm');
+
+        $html = $client->getResponse()->getContent();
+
+        $this->assertStringContainsString('class="btn-close" data-bs-dismiss="modal"', $html);
+        $this->assertStringNotContainsString('data-dismiss="modal"', $html);
+    }
+
     public function testMessageModalRejectsPost()
     {
         $client = static::createClient();
