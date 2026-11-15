@@ -31,7 +31,7 @@ class ModalOpenResponse extends JsonResponse
      *
      * Validates the modal protocol before encoding.
      */
-    public function setData($data = [])
+    public function setData(mixed $data = []): static
     {
         if (null === $data) {
             return parent::setData($data);

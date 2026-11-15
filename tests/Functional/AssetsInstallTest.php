@@ -9,7 +9,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 class AssetsInstallTest extends KernelTestCase
 {
-    protected static function getKernelClass()
+    protected static function getKernelClass(): string
     {
         return AppKernel::class;
     }
