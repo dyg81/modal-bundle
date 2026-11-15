@@ -2,6 +2,19 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
+## 5.0.0 (unreleased)
+
+### Changed
+- Require PHP `>=8.1` and Symfony `^6.4`.
+- Require Twig `^3.0`.
+- Update `ModalOpenResponse::setData()` and `ModalRedirectResponse::setData()` to the Symfony 6.4 signature `setData(mixed $data = []): static`.
+- Update the CI matrix to PHP 8.1/8.3 with Symfony 6.4.
+
+### Removed
+- Symfony 4.4 and 5.4 support.
+- Twig 2 support.
+- PHP 8.0 support.
+
 ## 4.0.0 (2026-11-14)
 
 ### Changed

@@ -1,5 +1,25 @@
 # Upgrade Guide
 
+## From 4.x to 5.0.0
+
+### PHP and Symfony requirements
+
+- PHP `>=8.1` is now required.
+- Only Symfony `6.4` is supported. Symfony `4.4` and `5.4` are dropped.
+- Twig `^3.0` is required.
+
+### Custom response subclasses
+
+If you extend `ModalOpenResponse` or `ModalRedirectResponse` and override `setData()`, match the Symfony 6.4 signature:
+
+```php
+public function setData(mixed $data = []): static
+```
+
+### Unchanged public API
+
+Routes, route names, Twig blocks and template namespace, CSS classes, data attributes, JSON response fields (`modal`, `modalId`, `redirect`), the `modalFunctions` global and the bundle asset paths are unchanged.
+
 ## From 3.x to 4.0.0
 
 ### PHP and Symfony requirements
