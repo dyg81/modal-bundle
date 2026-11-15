@@ -29,7 +29,7 @@ class ModalRedirectResponse extends JsonResponse
      *
      * Validates the redirect protocol before encoding.
      */
-    public function setData($data = [])
+    public function setData(mixed $data = []): static
     {
         if (null === $data) {
             return parent::setData($data);

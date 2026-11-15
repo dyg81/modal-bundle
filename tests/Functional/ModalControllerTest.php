@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class ModalControllerTest extends WebTestCase
 {
-    protected static function getKernelClass()
+    protected static function getKernelClass(): string
     {
         return AppKernel::class;
     }
