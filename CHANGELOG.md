@@ -2,6 +2,11 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
+## 5.0.1 (2026-11-16)
+
+### Fixed
+- Require `symfony/flex ^2.5` in development dependencies so the lowest-dependency CI job does not install Flex 2.0.0, which is incompatible with current Composer.
+
 ## 5.0.0 (2026-11-15)
 
 ### Changed
