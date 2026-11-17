@@ -2,7 +2,7 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
-## 6.0.0 (unreleased)
+## 6.0.0 (2026-11-17)
 
 ### Changed
 - Require PHP `>=8.2` and Symfony `^7.4`.
