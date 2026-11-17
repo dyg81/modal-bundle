@@ -19,6 +19,7 @@ Thumbs.db
 # Test and coverage artifacts
 /coverage/
 /.phpunit.result.cache
+/.phpunit.cache/
 /phpunit.xml
 
 # Symfony Flex recipe artifacts (this is a bundle, not an application)

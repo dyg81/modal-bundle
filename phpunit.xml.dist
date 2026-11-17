@@ -4,8 +4,7 @@
          bootstrap="vendor/autoload.php"
          colors="true"
          beStrictAboutOutputDuringTests="false"
-         beStrictAboutTodoAnnotatedTests="true"
-         verbose="true">
+         cacheDirectory=".phpunit.cache">
     <testsuites>
         <testsuite name="ModalBundle Test Suite">
             <directory>tests</directory>

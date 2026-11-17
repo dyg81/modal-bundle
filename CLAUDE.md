@@ -89,7 +89,7 @@ The host page must load Bootstrap 5 and `bundles/dyg81modal/js/scripts.js`; jQue
 
 ## Compatibility constraints
 
-Composer supports Symfony `6.4` with Twig `^3.0` and PHP `>=8.1`. Preserve that compatibility when introducing PHP, YAML routing, or Twig syntax. JavaScript must stay compatible with Bootstrap 5's browser baseline and must not use a build step or jQuery.
+Composer supports Symfony `7.4` with Twig `^3.12` and PHP `>=8.2`. Preserve that compatibility when introducing PHP, YAML routing, or Twig syntax. JavaScript must stay compatible with Bootstrap 5's browser baseline and must not use a build step or jQuery.
 
 The following are public API and should be treated as stable across minor versions:
 
@@ -102,7 +102,7 @@ The following are public API and should be treated as stable across minor versio
 
 ## Conventions
 
-- PHP: PSR-12, 4 spaces, PHP 8.1-compatible syntax.
+- PHP: PSR-12, 4 spaces, PHP 8.2-compatible syntax.
 - JavaScript: ES5-style syntax with vanilla DOM APIs and `fetch`, 4 spaces, end statements with `;`, use `addEventListener` rather than inline handlers.
 - Twig: Bootstrap 5 markup, 4 spaces.
 - YAML: 2 spaces.
