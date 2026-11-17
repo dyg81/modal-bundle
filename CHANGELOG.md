@@ -2,6 +2,11 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
+## 6.0.1 (2026-11-17)
+
+### Security
+- Update `@playwright/test` from 1.48.2 to 1.65.1 to address a high-severity advisory in Playwright versions below 1.55.1 (browser download without SSL certificate verification). Development tooling only; no runtime code changes.
+
 ## 6.0.0 (2026-11-17)
 
 ### Changed
