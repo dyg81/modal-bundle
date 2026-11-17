@@ -2,6 +2,19 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
+## 6.0.0 (unreleased)
+
+### Changed
+- Require PHP `>=8.2` and Symfony `^7.4`.
+- Require Twig `^3.12`.
+- Require PHPUnit `^10.5|^11.0` and update `phpunit.xml.dist` to the PHPUnit 10/11 schema.
+- Update the CI matrix to PHP 8.2/8.4 with Symfony 7.4.
+
+### Removed
+- Symfony 6.4 support.
+- PHP 8.1 support.
+- PHPUnit 9 support.
+
 ## 5.0.1 (2026-11-16)
 
 ### Fixed

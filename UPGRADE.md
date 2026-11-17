@@ -1,5 +1,25 @@
 # Upgrade Guide
 
+## From 5.x to 6.0.0
+
+### PHP and Symfony requirements
+
+- PHP `>=8.2` is now required.
+- Only Symfony `7.4` is supported. Symfony `6.4` is dropped.
+- Twig `^3.12` is required.
+
+### Custom response subclasses
+
+The signature of `setData()` remains `setData(mixed $data = []): static`. If you extend `ModalOpenResponse` or `ModalRedirectResponse`, verify that your override still matches the parent method in Symfony 7.4.
+
+### PHPUnit
+
+Running the bundle test suite locally now requires PHPUnit `^10.5|^11.0`.
+
+### Unchanged public API
+
+Routes, route names, Twig blocks and template namespace, CSS classes, data attributes, JSON response fields (`modal`, `modalId`, `redirect`), the `modalFunctions` global and the bundle asset paths are unchanged.
+
 ## From 4.x to 5.0.0
 
 ### PHP and Symfony requirements
