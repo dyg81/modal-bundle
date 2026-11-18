@@ -6,15 +6,15 @@ The bundle provides ready-to-use message and confirmation modals, helpers for op
 
 # Requirements
 
-- PHP `>=8.2`
-- Symfony `7.4`
-- Twig `^3.12`
+- PHP `>=8.4.1`
+- Symfony `8.1` or `8.2`
+- Twig `^3.25`
 - Bootstrap `5.x`
 - A modern evergreen browser: the bundle uses `fetch`, `AbortController`, `DOMParser`, `CustomEvent`, `URLSearchParams`, `Promise#finally`, `Object.assign` and `addEventListener` signal options
 
 jQuery is no longer required by the bundle. The host page may keep loading it for its own code.
 
-CI tests these PHP/Symfony combinations: PHP 8.2 with Symfony 7.4 (lowest and highest dependencies) and PHP 8.4 with Symfony 7.4 (highest dependencies). Other combinations are not tested.
+CI tests these PHP/Symfony combinations: PHP 8.4 with Symfony 8.1 (lowest and highest dependencies), PHP 8.5 with Symfony 8.1 (highest dependencies) and PHP 8.5 with Symfony 8.2 (highest dependencies). Symfony 8.2 is tested as a pre-release until its stable release. Other combinations are not tested.
 
 # Installation
 
@@ -28,7 +28,7 @@ If your application still uses the pre-Flex directory structure, migrate it to t
 
 ## Enable the bundle
 
-In Symfony 7.4 Flex applications, Flex normally registers the bundle automatically. If it does not, add it to `config/bundles.php`:
+In Symfony 8.1 and 8.2 Flex applications, Flex normally registers the bundle automatically. If it does not, add it to `config/bundles.php`:
 
 ```php
 return [
