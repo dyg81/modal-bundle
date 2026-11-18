@@ -1,5 +1,29 @@
 # Upgrade Guide
 
+## From 6.x to 7.0.0
+
+### PHP and Symfony requirements
+
+- PHP `>=8.4.1` is now required.
+- Only Symfony `8.1` and `8.2` are supported. Symfony `7.4` is dropped.
+- Twig `^3.25` is required.
+- PHPUnit `^13.0` is required to run the bundle test suite locally.
+
+### Custom extension or test kernel subclasses
+
+Symfony 8 adds `: void` to `ExtensionInterface::load()` and `KernelInterface::registerContainerConfiguration()`. If you extend `Dyg81ModalExtension` or copied `tests/Fixtures/app/AppKernel.php`, declare the return type:
+
+```php
+public function load(array $configs, ContainerBuilder $container): void
+public function registerContainerConfiguration(LoaderInterface $loader): void
+```
+
+The signature of `setData()` remains `setData(mixed $data = []): static`.
+
+### Unchanged public API
+
+Routes, route names, Twig blocks and template namespace, CSS classes, data attributes, JSON response fields (`modal`, `modalId`, `redirect`), the `modalFunctions` global and the bundle asset paths are unchanged.
+
 ## From 5.x to 6.0.0
 
 ### PHP and Symfony requirements

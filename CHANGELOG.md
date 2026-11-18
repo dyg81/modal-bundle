@@ -2,6 +2,23 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
+## 7.0.0 (2026-11-18)
+
+### Added
+- Support for Symfony 8.2. The `^8.1` constraint also installs 8.2 once stable; CI tests 8.2 while it is a pre-release.
+
+### Changed
+- Require PHP `>=8.4.1` and Symfony `^8.1`.
+- Require Twig `^3.25`.
+- Require PHPUnit `^13.0`.
+- Declare `: void` on `Dyg81ModalExtension::load()` and the test `AppKernel::registerContainerConfiguration()` for Symfony 8.
+- Update the CI matrix to PHP 8.4/8.5 with Symfony 8.1/8.2.
+
+### Removed
+- Symfony 7.4 support.
+- PHP 8.2 and 8.3 support.
+- PHPUnit 10 and 11 support.
+
 ## 6.0.1 (2026-11-17)
 
 ### Security

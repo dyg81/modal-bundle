@@ -3,30 +3,36 @@ name: CI
 on:
   push:
     branches:
-      - '*'
+      - '**'
   pull_request:
     branches:
       - master
-      - 5.x
+      - 6.x
   workflow_dispatch:
 
 jobs:
   php:
     name: PHP ${{ matrix.php }} / Symfony ${{ matrix.symfony }} (${{ matrix.deps }})
     runs-on: ubuntu-latest
+    env:
+      SYMFONY_REQUIRE: ${{ matrix.symfony }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - php: '8.2'
-            symfony: '7.4.*'
-            deps: lowest
-          - php: '8.2'
-            symfony: '7.4.*'
-            deps: highest
           - php: '8.4'
-            symfony: '7.4.*'
+            symfony: '8.1.*'
+            deps: lowest
+          - php: '8.4'
+            symfony: '8.1.*'
             deps: highest
+          - php: '8.5'
+            symfony: '8.1.*'
+            deps: highest
+          - php: '8.5'
+            symfony: '8.2.*'
+            deps: highest
+            stability: beta
 
     steps:
       - name: Checkout
@@ -49,10 +55,14 @@ jobs:
         run: |
           composer config extra.symfony.require "$SYMFONY_REQUIRE"
 
+      - name: Allow pre-release Symfony versions
+        if: matrix.stability == 'beta'
+        run: |
+          composer config minimum-stability beta
+          composer config prefer-stable true
+
       - name: Install dependencies
         run: composer update --no-interaction --no-progress --prefer-dist ${{ matrix.deps == 'lowest' && '--prefer-lowest' || '' }}
-        env:
-          SYMFONY_REQUIRE: ${{ matrix.symfony }}
 
       - name: Lint
         run: composer lint
@@ -97,7 +107,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: '8.5'
           extensions: mbstring, xml, ctype, iconv, intl
           coverage: none
 
