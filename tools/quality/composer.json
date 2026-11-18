@@ -3,14 +3,14 @@
     "type": "project",
     "description": "Isolated quality tools for dyg81/modal-bundle",
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.4.1",
         "friendsofphp/php-cs-fixer": "^3.0",
-        "phpstan/phpstan": "^1.12"
+        "phpstan/phpstan": "^2.3"
     },
     "config": {
         "sort-packages": true,
         "platform": {
-            "php": "8.2.0"
+            "php": "8.4.1"
         }
     }
 }

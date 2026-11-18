@@ -21,6 +21,7 @@ Thumbs.db
 /.phpunit.result.cache
 /.phpunit.cache/
 /phpunit.xml
+/tests/Fixtures/app/config/reference.php
 
 # Symfony Flex recipe artifacts (this is a bundle, not an application)
 /.env

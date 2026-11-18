@@ -131,7 +131,7 @@ class TranslationFilesTest extends TestCase
 
         if (preg_match_all('/\{\s*([a-zA-Z_][a-zA-Z0-9_]*|\d+)\s*(?:,\s*([a-zA-Z]+))?/', $message, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $match) {
-                $tokens[] = isset($match[2]) && '' !== $match[2] ? $match[2].'('.$match[1].')' : 'argument('.$match[1].')';
+                $tokens[] = isset($match[2]) ? $match[2].'('.$match[1].')' : 'argument('.$match[1].')';
             }
         }
 
