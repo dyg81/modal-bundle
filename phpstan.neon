@@ -5,6 +5,7 @@ parameters:
         - tests
     excludePaths:
         - tests/Fixtures/app/var (?)
+        - tests/bootstrap.php (?)
     ignoreErrors:
         -
             message: '#Unsafe usage of new static#'
