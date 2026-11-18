@@ -2,7 +2,7 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
-## 7.0.0 (unreleased)
+## 7.0.0 (2026-11-18)
 
 ### Added
 - Support for Symfony 8.2. The `^8.1` constraint also installs 8.2 once stable; CI tests 8.2 while it is a pre-release.
