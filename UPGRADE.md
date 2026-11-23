@@ -1,5 +1,13 @@
 # Upgrade Guide
 
+## From 6.0 to 6.1.0
+
+### RTL support
+
+No PHP or JavaScript API changes are required. If you override `@Dyg81Modal/baseModal.html.twig`, copy the new `lang` and `dir` attributes onto the outer `.modal` element so RTL locales are handled correctly.
+
+The `ajax-progress` spinner now uses `margin-inline-start` for logical spacing; browsers that do not support logical properties keep the previous `margin-left` fallback.
+
 ## From 5.x to 6.0.0
 
 ### PHP and Symfony requirements

@@ -2,6 +2,15 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
+## 6.1.0 (2026-11-23)
+
+### Added
+- Arabic (`ar`) and Hebrew (`he`) translations.
+- `lang` and `dir` attributes on the modal root element, driven by the current request locale (`rtl` for Arabic and Hebrew, `ltr` otherwise; `lang` uses BCP 47 tags such as `pt-BR`).
+
+### Changed
+- Use logical `margin-inline-start` in `ajax-progress.css` so the loading spinner spacing is direction-aware.
+
 ## 6.0.1 (2026-11-17)
 
 ### Security

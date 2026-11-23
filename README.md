@@ -271,14 +271,22 @@ Built-in messages use the `Dyg81ModalBundle` translation domain and ship in thes
 
 | Locale | Language | File |
 | --- | --- | --- |
+| `ar` | Arabic | `Dyg81ModalBundle.ar.xlf` |
+| `de` | German | `Dyg81ModalBundle.de.xlf` |
 | `en` | English | `Dyg81ModalBundle.en.xlf` |
 | `es` | Spanish | `Dyg81ModalBundle.es.xlf` |
-| `pt_BR` | Brazilian Portuguese | `Dyg81ModalBundle.pt_BR.xlf` |
 | `fr` | French | `Dyg81ModalBundle.fr.xlf` |
-| `de` | German | `Dyg81ModalBundle.de.xlf` |
+| `he` | Hebrew | `Dyg81ModalBundle.he.xlf` |
 | `ja` | Japanese | `Dyg81ModalBundle.ja.xlf` |
+| `pt_BR` | Brazilian Portuguese | `Dyg81ModalBundle.pt_BR.xlf` |
 
 File names use Symfony's locale identifiers; the XLIFF `source-language` and `target-language` attributes use the corresponding BCP 47 tags (`pt-BR` for the `pt_BR` locale).
+
+## RTL languages
+
+The modal templates add `lang` and `dir` attributes to the root `.modal` element based on the current request locale. Arabic (`ar`) and Hebrew (`he`) render `dir="rtl"`; all other bundled locales render `dir="ltr"`. The `lang` attribute uses BCP 47 tags (for example `pt-BR` for the `pt_BR` locale).
+
+For a fully mirrored Bootstrap layout on RTL pages, load Bootstrap's RTL CSS variant in the host application. The bundle itself only annotates direction and language.
 
 ## Fallback
 
