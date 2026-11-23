@@ -1,7 +1,10 @@
 {% set modalId = block('modalId')|trim|default('base-modal') %}
 {% set modalTitleContent = block('modalTitle')|trim %}
 {% set modalHeaderContent = block('modalHeader')|trim %}
-<div id="{% block modalId %}base-modal{% endblock %}" class="modal {% block modalEffects %}fade{% endblock %}" {% block modalBackdrop %}{% endblock %} role="dialog" tabindex="-1" aria-modal="true"{% if modalTitleContent %} aria-labelledby="{{ modalId }}-title"{% else %} aria-label="{{ 'modal.dialog.label'|trans({}, 'Dyg81ModalBundle') }}"{% endif %}>
+{% set modalLocale = app.request ? app.request.locale : 'en' %}
+{% set modalLang = modalLocale|replace({'_':'-'}) %}
+{% set modalDir = modalLocale in ['ar', 'he'] ? 'rtl' : 'ltr' %}
+<div id="{% block modalId %}base-modal{% endblock %}" class="modal {% block modalEffects %}fade{% endblock %}" {% block modalBackdrop %}{% endblock %} role="dialog" tabindex="-1" aria-modal="true" lang="{{ modalLang }}" dir="{{ modalDir }}"{% if modalTitleContent %} aria-labelledby="{{ modalId }}-title"{% else %} aria-label="{{ 'modal.dialog.label'|trans({}, 'Dyg81ModalBundle') }}"{% endif %}>
   <div class="modal-dialog {% block modalSize %}{% endblock %}">
     <div class="modal-content">
         {% block modalContent %}

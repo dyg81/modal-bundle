@@ -2,8 +2,11 @@
 
 namespace Dyg81\ModalBundle\Tests\Functional;
 
+use Dyg81\ModalBundle\Controller\ModalController;
 use Dyg81\ModalBundle\Tests\Fixtures\app\AppKernel;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class ModalControllerTest extends WebTestCase
 {
@@ -116,5 +119,104 @@ class ModalControllerTest extends WebTestCase
         $client->request('GET', '/modal/open?key=modal.does.not.exist');
 
         $this->assertSame(404, $client->getResponse()->getStatusCode());
+    }
+
+    public function testOpenMessageModalRendersArabicWithRtlAttributes(): void
+    {
+        $response = $this->renderMessageModal('ar', 'modal.message.info.title');
+
+        $this->assertSame(200, $response->getStatusCode());
+        $html = $response->getContent();
+        $this->assertStringContainsString('lang="ar"', $html);
+        $this->assertStringContainsString('dir="rtl"', $html);
+        $this->assertStringContainsString('معلومات', $html);
+    }
+
+    public function testOpenMessageModalRendersHebrewWithRtlAttributes(): void
+    {
+        $response = $this->renderMessageModal('he', 'modal.message.confirm.title');
+
+        $this->assertSame(200, $response->getStatusCode());
+        $html = $response->getContent();
+        $this->assertStringContainsString('lang="he"', $html);
+        $this->assertStringContainsString('dir="rtl"', $html);
+        $this->assertStringContainsString('אישור פעולה', $html);
+    }
+
+    public function testOpenMessageModalRendersEnglishLtr(): void
+    {
+        $response = $this->renderMessageModal('en', 'modal.message.info.title');
+
+        $this->assertSame(200, $response->getStatusCode());
+        $html = $response->getContent();
+        $this->assertStringContainsString('lang="en"', $html);
+        $this->assertStringContainsString('dir="ltr"', $html);
+        $this->assertStringContainsString('Information', $html);
+    }
+
+    public function testOpenMessageModalRendersBcp47LanguageTagForRegionalLocale(): void
+    {
+        $response = $this->renderMessageModal('pt_BR', 'modal.message.info.title');
+
+        $this->assertSame(200, $response->getStatusCode());
+        $html = $response->getContent();
+        $this->assertStringContainsString('lang="pt-BR"', $html);
+        $this->assertStringContainsString('dir="ltr"', $html);
+    }
+
+    public function testOpenConfirmModalRendersRtlWhenLocaleIsArabic(): void
+    {
+        $response = $this->renderConfirmModal('ar');
+
+        $this->assertSame(200, $response->getStatusCode());
+        $html = $response->getContent();
+        $this->assertStringContainsString('lang="ar"', $html);
+        $this->assertStringContainsString('dir="rtl"', $html);
+    }
+
+    private function renderMessageModal(string $locale, string $key): Response
+    {
+        static::bootKernel();
+        $container = static::getContainer();
+
+        $request = Request::create('/modal/open?key='.$key);
+        $request->setLocale($locale);
+
+        $stack = $container->get('request_stack');
+        $stack->push($request);
+
+        try {
+            $controller = new ModalController(
+                $container->get('twig'),
+                $container->get('translator')
+            );
+
+            return $controller->openMessageModalAction($request);
+        } finally {
+            $stack->pop();
+        }
+    }
+
+    private function renderConfirmModal(string $locale): Response
+    {
+        static::bootKernel();
+        $container = static::getContainer();
+
+        $request = Request::create('/modal/confirm');
+        $request->setLocale($locale);
+
+        $stack = $container->get('request_stack');
+        $stack->push($request);
+
+        try {
+            $controller = new ModalController(
+                $container->get('twig'),
+                $container->get('translator')
+            );
+
+            return $controller->openConfirmModalAction();
+        } finally {
+            $stack->pop();
+        }
     }
 }
