@@ -2,6 +2,7 @@
     display: inline-flex;
     align-items: center;
     margin-left: 0.5rem;
+    margin-inline-start: 0.5rem;
 }
 
 .ajax-progress-throbber .throbber {
