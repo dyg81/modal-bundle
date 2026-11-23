@@ -1,5 +1,13 @@
 # Upgrade Guide
 
+## From 7.0 to 7.1
+
+### RTL support
+
+Modal roots now receive `lang` and `dir` based on the request locale. If you override `@Dyg81Modal/baseModal.html.twig`, update your template to preserve these attributes. Arabic and Hebrew, including regional variants, render right-to-left. Load Bootstrap's RTL CSS in the host application for a fully mirrored layout.
+
+The AJAX spinner uses a logical start margin in browsers that support it. Older browsers retain the previous left-margin fallback.
+
 ## From 6.x to 7.0.0
 
 ### PHP and Symfony requirements

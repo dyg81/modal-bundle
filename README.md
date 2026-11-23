@@ -271,6 +271,8 @@ Built-in messages use the `Dyg81ModalBundle` translation domain and ship in thes
 
 | Locale | Language | File |
 | --- | --- | --- |
+| `ar` | Arabic | `Dyg81ModalBundle.ar.xlf` |
+| `he` | Hebrew | `Dyg81ModalBundle.he.xlf` |
 | `en` | English | `Dyg81ModalBundle.en.xlf` |
 | `es` | Spanish | `Dyg81ModalBundle.es.xlf` |
 | `pt_BR` | Brazilian Portuguese | `Dyg81ModalBundle.pt_BR.xlf` |
@@ -279,6 +281,12 @@ Built-in messages use the `Dyg81ModalBundle` translation domain and ship in thes
 | `ja` | Japanese | `Dyg81ModalBundle.ja.xlf` |
 
 File names use Symfony's locale identifiers; the XLIFF `source-language` and `target-language` attributes use the corresponding BCP 47 tags (`pt-BR` for the `pt_BR` locale).
+
+## RTL languages
+
+The root modal element gets `lang` and `dir` from the current request locale. Arabic and Hebrew, including regional variants such as `ar_SA` and `he_IL`, use `dir="rtl"`; other languages use `dir="ltr"`. Underscores in locale identifiers are replaced with hyphens in `lang` (for example, `pt_BR` becomes `pt-BR`). Without a request, the modal defaults to English and LTR.
+
+Load Bootstrap's RTL CSS in the host application for a fully mirrored layout. The AJAX spinner uses logical spacing in browsers that support it; older browsers retain the left-margin fallback. Built-in JavaScript error messages remain in English; prevent the cancelable `modal:error` event to provide translated error UI.
 
 ## Fallback
 

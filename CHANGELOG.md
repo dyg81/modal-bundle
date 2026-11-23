@@ -2,6 +2,15 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
+## Unreleased
+
+### Added
+- Arabic and Hebrew translations and RTL direction for these languages, including regional locales.
+- Request locale-based `lang` and `dir` attributes on modal roots.
+
+### Changed
+- Use direction-aware spacing for the AJAX spinner, with a physical fallback for older browsers.
+
 ## 7.0.0 (2026-11-18)
 
 ### Added
