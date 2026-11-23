@@ -2,7 +2,7 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
-## Unreleased
+## 7.1.0 (2026-11-23)
 
 ### Added
 - Arabic and Hebrew translations and RTL direction for these languages, including regional locales.
