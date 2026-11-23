@@ -2,7 +2,7 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
-## Unreleased
+## 6.1.1 (2026-11-23)
 
 ### Fixed
 - Render Arabic and Hebrew regional locales right-to-left.
