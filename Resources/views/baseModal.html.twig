@@ -3,7 +3,8 @@
 {% set modalHeaderContent = block('modalHeader')|trim %}
 {% set modalLocale = app.request ? app.request.locale : 'en' %}
 {% set modalLang = modalLocale|replace({'_':'-'}) %}
-{% set modalDir = modalLocale in ['ar', 'he'] ? 'rtl' : 'ltr' %}
+{% set modalLanguage = modalLang|split('-')|first|lower %}
+{% set modalDir = modalLanguage in ['ar', 'he'] ? 'rtl' : 'ltr' %}
 <div id="{% block modalId %}base-modal{% endblock %}" class="modal {% block modalEffects %}fade{% endblock %}" {% block modalBackdrop %}{% endblock %} role="dialog" tabindex="-1" aria-modal="true" lang="{{ modalLang }}" dir="{{ modalDir }}"{% if modalTitleContent %} aria-labelledby="{{ modalId }}-title"{% else %} aria-label="{{ 'modal.dialog.label'|trans({}, 'Dyg81ModalBundle') }}"{% endif %}>
   <div class="modal-dialog {% block modalSize %}{% endblock %}">
     <div class="modal-content">

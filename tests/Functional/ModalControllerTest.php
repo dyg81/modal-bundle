@@ -174,6 +174,20 @@ class ModalControllerTest extends WebTestCase
         $this->assertStringContainsString('dir="rtl"', $html);
     }
 
+    public function testRegionalRtlLocalesSetDirectionOnModalRoot(): void
+    {
+        foreach (['ar_SA' => 'ar-SA', 'he_IL' => 'he-IL'] as $locale => $language) {
+            $response = $this->renderMessageModal($locale, 'modal.message.info.title');
+            $crawler = new \Symfony\Component\DomCrawler\Crawler($response->getContent());
+            $modal = $crawler->filter('div.modal')->first();
+
+            $this->assertSame(200, $response->getStatusCode());
+            $this->assertSame($language, $modal->attr('lang'));
+            $this->assertSame('rtl', $modal->attr('dir'));
+            static::ensureKernelShutdown();
+        }
+    }
+
     private function renderMessageModal(string $locale, string $key): Response
     {
         static::bootKernel();

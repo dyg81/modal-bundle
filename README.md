@@ -284,7 +284,7 @@ File names use Symfony's locale identifiers; the XLIFF `source-language` and `ta
 
 ## RTL languages
 
-The modal templates add `lang` and `dir` attributes to the root `.modal` element based on the current request locale. Arabic (`ar`) and Hebrew (`he`) render `dir="rtl"`; all other bundled locales render `dir="ltr"`. The `lang` attribute uses BCP 47 tags (for example `pt-BR` for the `pt_BR` locale).
+The modal templates add `lang` and `dir` attributes to the root `.modal` element based on the current request locale. Arabic (`ar`) and Hebrew (`he`), including regional variants such as `ar_SA` and `he_IL`, render `dir="rtl"`; all other bundled locales render `dir="ltr"`. The `lang` attribute uses BCP 47 tags (for example `pt-BR` for the `pt_BR` locale).
 
 For a fully mirrored Bootstrap layout on RTL pages, load Bootstrap's RTL CSS variant in the host application. The bundle itself only annotates direction and language.
 

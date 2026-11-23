@@ -2,6 +2,12 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
+## Unreleased
+
+### Fixed
+- Render Arabic and Hebrew regional locales right-to-left.
+- Avoid an extra left margin on the AJAX spinner in RTL layouts.
+
 ## 6.1.0 (2026-11-23)
 
 ### Added

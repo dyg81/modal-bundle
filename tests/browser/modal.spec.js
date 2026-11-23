@@ -261,3 +261,20 @@ test('emits modal:error and shows a message when the request fails', async ({ pa
     await expect(page.locator('.modal-error-message')).toBeVisible();
     expect(await page.evaluate(() => window.__errors)).toEqual(['http-error']);
 });
+
+
+test('spaces the inserted progress indicator at the inline start in both directions', async ({ page }) => {
+    await initPage(page, '<div dir="ltr"><button id="ltr">LTR</button></div><div dir="rtl"><button id="rtl">RTL</button></div>');
+    await page.addStyleTag({ path: path.join(__dirname, '..', '..', 'Resources', 'public', 'css', 'ajax-progress.css') });
+    await page.evaluate(() => {
+        modalFunctions.addProgressThrobber(document.getElementById('ltr'));
+        modalFunctions.addProgressThrobber(document.getElementById('rtl'));
+    });
+
+    const ltr = page.locator('[dir="ltr"] .ajax-progress');
+    const rtl = page.locator('[dir="rtl"] .ajax-progress');
+    await expect(ltr).toHaveCSS('margin-left', '8px');
+    await expect(ltr).toHaveCSS('margin-right', '0px');
+    await expect(rtl).toHaveCSS('margin-left', '0px');
+    await expect(rtl).toHaveCSS('margin-right', '8px');
+});
