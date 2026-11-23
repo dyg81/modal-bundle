@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 class TranslationFilesTest extends TestCase
 {
     public const DEFAULT_LOCALE = 'en';
-    public const EXPECTED_LOCALES = ['de', 'en', 'es', 'fr', 'ja', 'pt_BR'];
+    public const EXPECTED_LOCALES = ['ar', 'de', 'en', 'es', 'fr', 'he', 'ja', 'pt_BR'];
 
     public function testSupportedLocalesHaveTranslationFiles()
     {
