@@ -1,7 +1,7 @@
 # Overview
 This symfony bundle is a fork of [Rares/ModalBundle](https://packagist.org/packages/rares/modal-bundle) which is no longer maintained.
 
-This new bundle is intend to work with Symfony 3.4/4.4/5.x to simplifies the process of displaying content in a modal. It provides several functionalities, from displaying simple messages and confirmation modals to displaying hole forms inside a modal.
+This new bundle is intend to work with Symfony 4.4 and 5.3+ to simplify the process of displaying content in a modal. It provides several functionalities, from displaying simple messages and confirmation modals to displaying hole forms inside a modal.
 
 # Version History
 
@@ -253,3 +253,12 @@ if ($form->isValid()) {
     );
 }
 ```
+
+
+## RTL languages
+
+The modal root gets `lang` and `dir` from the request locale. Arabic and Hebrew, including `ar_SA` and `he_IL`, use RTL. Load an RTL-compatible stylesheet for the host application's Bootstrap version. The progress indicator uses symmetric padding in both directions. Applications that override the base modal template should retain these attributes.
+
+## Version 2.1.0
+
+Added Arabic and Hebrew translations and RTL direction, fixed the loading indicator after a failed modal request, and added basic automated tests. Legacy framework and PHP versions may no longer receive upstream security updates.
