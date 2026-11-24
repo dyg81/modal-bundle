@@ -1,5 +1,9 @@
 # Upgrade Guide
 
+## 3.3.0: RTL support
+
+Modal roots now include language and direction based on the request locale. Overrides of `@Dyg81Modal/baseModal.html.twig` should retain the new `lang` and `dir` attributes. Arabic and Hebrew regional locales render RTL. The progress indicator uses logical spacing where supported, with a physical left-margin fallback on older browsers.
+
 ## From 3.1 to 3.2.0
 
 No application changes are required. `baseModal.html.twig` now defines each block once, at its place in the markup, instead of repeating the definitions after the modal element — those repeats were rendered at the end of every modal response. If you copied the template or override `@Dyg81Modal/baseModal.html.twig`, compare it with the new version and remove the trailing `{% block ... %}` definitions.

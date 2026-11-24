@@ -306,6 +306,8 @@ Built-in messages use the `Dyg81ModalBundle` translation domain and ship in thes
 
 | Locale | Language | File |
 | --- | --- | --- |
+| `ar` | Arabic | `Dyg81ModalBundle.ar.xlf` |
+| `he` | Hebrew | `Dyg81ModalBundle.he.xlf` |
 | `en` | English | `Dyg81ModalBundle.en.xlf` |
 | `es` | Spanish | `Dyg81ModalBundle.es.xlf` |
 | `pt_BR` | Brazilian Portuguese | `Dyg81ModalBundle.pt_BR.xlf` |
@@ -376,3 +378,8 @@ Linting confirms syntax and style; behavior can only be verified inside a consum
 # License
 
 This bundle is released under the MIT license. See the [LICENSE](LICENSE) file for the full text and upstream attribution.
+
+
+## RTL languages
+
+Arabic (`ar`) and Hebrew (`he`), including regional locales such as `ar_SA` and `he_IL`, render modal roots right-to-left. The modal root receives `lang` and `dir` from the current request. Load an RTL-compatible Bootstrap 4 stylesheet in the host application for mirrored components. Custom overrides of `@Dyg81Modal/baseModal.html.twig` need the same attributes. The progress indicator uses logical spacing where supported, retaining a left-margin fallback in older browsers.

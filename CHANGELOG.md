@@ -2,6 +2,14 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
+## 3.3.0 (2026-11-23)
+
+### Added
+- Arabic and Hebrew translations and RTL direction for regional locales.
+
+### Changed
+- Fix RTL progress indicator spacing and update CI actions and Playwright.
+
 ## 3.2.0 (2026-11-12)
 
 ### Fixed
