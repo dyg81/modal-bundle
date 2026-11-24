@@ -1,5 +1,9 @@
 # Upgrade Guide
 
+## 4.1.0: RTL support
+
+Modal roots now include language and direction based on the request locale. Overrides of `@Dyg81Modal/baseModal.html.twig` should retain the new `lang` and `dir` attributes. Arabic and Hebrew regional locales render RTL. The progress indicator uses logical spacing where supported, with a physical left-margin fallback on older browsers.
+
 ## From 3.x to 4.0.0
 
 ### PHP and Symfony requirements
