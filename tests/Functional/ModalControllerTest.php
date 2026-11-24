@@ -190,7 +190,7 @@ class ModalControllerTest extends WebTestCase
     public function testModalDefaultsToEnglishWithoutRequest(): void
     {
         static::bootKernel();
-        $container = static::getContainer();
+        $container = (method_exists(static::class, 'getContainer') ? static::getContainer() : static::$kernel->getContainer());
         $html = $container->get('twig')->render('@Dyg81Modal/baseModal.html.twig');
         $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
         $modal = $crawler->filter('div.modal')->first();
@@ -202,7 +202,7 @@ class ModalControllerTest extends WebTestCase
     private function renderMessageModal(string $locale, string $key): Response
     {
         static::bootKernel();
-        $container = static::getContainer();
+        $container = (method_exists(static::class, 'getContainer') ? static::getContainer() : static::$kernel->getContainer());
 
         $request = Request::create('/modal/open?key='.$key);
         $request->setLocale($locale);
@@ -225,7 +225,7 @@ class ModalControllerTest extends WebTestCase
     private function renderConfirmModal(string $locale): Response
     {
         static::bootKernel();
-        $container = static::getContainer();
+        $container = (method_exists(static::class, 'getContainer') ? static::getContainer() : static::$kernel->getContainer());
 
         $request = Request::create('/modal/confirm');
         $request->setLocale($locale);
