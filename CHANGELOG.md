@@ -2,6 +2,11 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
+## 5.1.1 (2026-11-23)
+
+### Changed
+- Update release metadata.
+
 ## 5.1.0 (2026-11-23)
 
 ### Added
