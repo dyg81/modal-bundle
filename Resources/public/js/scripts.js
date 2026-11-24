@@ -39,6 +39,8 @@ modalFunctions.openModal = function(event) {
         }).done(function(data) {
             throbber.remove();
             modalFunctions.displayModal(data, '#' + modalId);
+        }).fail(function() {
+            throbber.remove();
         });
     }
 };

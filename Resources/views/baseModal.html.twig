@@ -1,4 +1,8 @@
-<div id="{% block modalId %}base-modal{% endblock %}" class="modal {% block modalEffects %}fade{% endblock %}" role="dialog" tabindex="-1">
+{% set modalLocale = app.request ? app.request.locale : 'en' %}
+{% set modalLang = modalLocale|replace({'_': '-'}) %}
+{% set modalLanguage = modalLang|split('-')|first|lower %}
+{% set modalDir = modalLanguage in ['ar', 'he'] ? 'rtl' : 'ltr' %}
+<div id="{% block modalId %}base-modal{% endblock %}" class="modal {% block modalEffects %}fade{% endblock %}" role="dialog" tabindex="-1" lang="{{ modalLang }}" dir="{{ modalDir }}">
   <div class="modal-dialog">
     <div class="modal-content">
         {% block modalContent %}
