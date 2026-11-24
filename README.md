@@ -16,6 +16,8 @@ This new bundle is intend to work with Symfony 5.2 and later 5.x releases allowe
     v1.3.0 - Change the require section to support sf4.4 and drop sf3.4 support.
     v1.4.0 - Add the dependency injection service to support sf5.2. Any other version is unsupported from now on.
     v1.4.1 - Delete unnecesary branch-alias section from composer.json.
+    v1.5.0 - Add Arabic and Hebrew RTL support, fix the loading indicator on failed modal requests, and add basic automated tests.
+    v1.5.1 - Correct the version history and release metadata.
 
 # Installation
 To install this bundle, first you need to have jQuery and Bootstrap installed.
@@ -251,7 +253,3 @@ if ($form->isValid()) {
 ## RTL languages
 
 The modal root gets `lang` and `dir` from the request locale. Arabic and Hebrew, including `ar_SA` and `he_IL`, use RTL. Load an RTL-compatible stylesheet for the host application's Bootstrap version. The progress indicator uses symmetric padding in both directions. Applications that override the base modal template should retain these attributes.
-
-## Version 1.5.0
-
-Added Arabic and Hebrew translations and RTL direction, fixed the loading indicator after a failed modal request, and added basic automated tests. Legacy framework and PHP versions may no longer receive upstream security updates.
