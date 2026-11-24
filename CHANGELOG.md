@@ -2,6 +2,11 @@
 
 All notable changes to `dyg81/modal-bundle` are documented in this file.
 
+## 3.3.1 (2026-11-23)
+
+### Changed
+- Update release metadata and synchronize the README version history.
+
 ## 3.3.0 (2026-11-23)
 
 ### Added
